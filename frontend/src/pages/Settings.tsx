@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Save, Loader2, Sparkles } from 'lucide-react'
-import { getAccount, updateAccount } from '@/api/mockApi'
+import { settingsApi } from '@/api/api'
 import type { Account, Industry, Currency, AccountPlan } from '@/types'
 
 const companyNames = [
@@ -23,16 +23,39 @@ export default function Settings() {
   const [isDirty, setIsDirty] = useState(false)
 
   const { data: account, isLoading } = useQuery({
-    queryKey: ['account'],
-    queryFn: getAccount,
+    queryKey: ['organization'],
+    queryFn: () => settingsApi.getOrganization(),
   })
 
   const [formData, setFormData] = useState<Partial<Account>>({})
 
+  useEffect(() => {
+    if (account) {
+      // Transform backend data to frontend format
+      setFormData({
+        id: (account as any)._id || account.id,
+        name: account.name,
+        industry: account.industry as Industry,
+        timezone: account.timezone,
+        currency: account.currency as Currency,
+        plan: 'Pro' as AccountPlan, // Backend doesn't have plan, use default
+        createdAt: (account as any).createdAt || new Date().toISOString(),
+      })
+    }
+  }, [account])
+
   const updateMutation = useMutation({
-    mutationFn: updateAccount,
+    mutationFn: (data: Partial<Account>) => {
+      const updateData: any = {
+        name: data.name,
+        industry: data.industry,
+        timezone: data.timezone,
+        currency: data.currency,
+      }
+      return settingsApi.updateOrganization(updateData)
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['account'] })
+      queryClient.invalidateQueries({ queryKey: ['organization'] })
       setIsDirty(false)
       alert('Settings saved successfully!')
     },
@@ -59,9 +82,7 @@ export default function Settings() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (account) {
-      updateMutation.mutate(formData)
-    }
+    updateMutation.mutate(currentData)
   }
 
   if (isLoading) {
@@ -76,10 +97,16 @@ export default function Settings() {
   }
 
   if (!account) {
-    return <div className="text-gray-900 dark:text-white">Account not found</div>
+    return <div className="text-gray-900 dark:text-white">Organization not found</div>
   }
 
-  const currentData = { ...account, ...formData }
+  const currentData = {
+    name: formData.name ?? account.name,
+    industry: (formData.industry ?? account.industry) as Industry,
+    timezone: formData.timezone ?? account.timezone,
+    currency: (formData.currency ?? account.currency) as Currency,
+    plan: formData.plan ?? ('Pro' as AccountPlan),
+  }
 
   return (
     <div className="space-y-6">

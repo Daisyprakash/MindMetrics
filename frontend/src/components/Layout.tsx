@@ -2,7 +2,7 @@ import { ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Moon, Sun, LogOut, User } from 'lucide-react'
-import { getAccount } from '@/api/mockApi'
+import { settingsApi } from '@/api/api'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -25,9 +25,10 @@ export default function Layout({ children }: LayoutProps) {
   const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
   const { user, logout } = useAuth()
-  const { data: account } = useQuery({
-    queryKey: ['account'],
-    queryFn: getAccount,
+  const { data: organization } = useQuery({
+    queryKey: ['organization'],
+    queryFn: () => settingsApi.getOrganization(),
+    enabled: !!user, // Only fetch if user is logged in
   })
 
   const handleLogout = () => {
@@ -56,9 +57,9 @@ export default function Layout({ children }: LayoutProps) {
                   <span>{user.name}</span>
                 </Link>
               )}
-              {account && (
+              {organization && (
                 <span className="px-2 py-1 text-xs font-medium bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded">
-                  {account.plan}
+                  {organization.name}
                 </span>
               )}
               <button

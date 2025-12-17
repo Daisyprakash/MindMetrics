@@ -1,56 +1,96 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import type { User } from '@/types'
+import { authApi } from '@/api/api'
+
+interface AdminUser {
+  _id: string
+  name: string
+  email: string
+  role: string
+  organizationId: string | {
+    _id: string
+    name: string
+    industry: string
+    timezone: string
+    currency: string
+  }
+}
 
 interface AuthContextType {
-  user: User | null
+  user: AdminUser | null
   login: (email: string, password: string) => Promise<boolean>
+  register: (data: {
+    name: string
+    email: string
+    password: string
+    organizationName: string
+    industry?: string
+  }) => Promise<boolean>
   logout: () => void
   isAuthenticated: boolean
+  loading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<AdminUser | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is logged in from localStorage
-    const storedUser = localStorage.getItem('currentUser')
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch (error) {
-        console.error('Error parsing stored user:', error)
-        localStorage.removeItem('currentUser')
-      }
+    // Check if user is logged in from token
+    const token = localStorage.getItem('authToken')
+    if (token) {
+      // Verify token by fetching user data
+      authApi
+        .getMe()
+        .then((userData) => {
+          setUser(userData as AdminUser)
+        })
+        .catch(() => {
+          // Token invalid, clear it
+          localStorage.removeItem('authToken')
+        })
+        .finally(() => {
+          setLoading(false)
+        })
+    } else {
+      setLoading(false)
     }
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simple login - accept any email/password
-    // In a real app, this would validate against a backend
-    
-    // Create a simple user object for the logged-in user
-    const loggedInUser: User = {
-      id: `logged_in_${Date.now()}`,
-      name: email.split('@')[0] || 'User',
-      email: email,
-      role: 'Admin',
-      status: 'active',
-      signupDate: new Date().toISOString(),
-      lastActiveAt: new Date().toISOString(),
-      region: 'North America',
-      subscriptionId: `sub_${Date.now()}`,
+    try {
+      const response = await authApi.login(email, password)
+      localStorage.setItem('authToken', response.token)
+      setUser(response.user as AdminUser)
+      return true
+    } catch (error) {
+      console.error('Login error:', error)
+      return false
     }
+  }
 
-    setUser(loggedInUser)
-    localStorage.setItem('currentUser', JSON.stringify(loggedInUser))
-    return true
+  const register = async (data: {
+    name: string
+    email: string
+    password: string
+    organizationName: string
+    industry?: string
+  }): Promise<boolean> => {
+    try {
+      const response = await authApi.register(data)
+      localStorage.setItem('authToken', response.token)
+      setUser(response.user as AdminUser)
+      return true
+    } catch (error) {
+      console.error('Registration error:', error)
+      return false
+    }
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('currentUser')
+    localStorage.removeItem('authToken')
   }
 
   return (
@@ -58,8 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         login,
+        register,
         logout,
         isAuthenticated: !!user,
+        loading,
       }}
     >
       {children}

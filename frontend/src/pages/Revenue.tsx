@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react'
-import { getSubscriptions, getTransactions, type GetTransactionsParams } from '@/api/mockApi'
+import { subscriptionApi, transactionApi } from '@/api/api'
 import KPICard from '@/components/KPICard'
 import DataTable, { type Column } from '@/components/DataTable'
 import type { Transaction } from '@/types'
@@ -20,12 +20,12 @@ import {
 export default function Revenue() {
   const { data: subscriptions, isLoading: subscriptionsLoading } = useQuery({
     queryKey: ['subscriptions'],
-    queryFn: getSubscriptions,
+    queryFn: () => subscriptionApi.getSubscriptions(),
   })
 
   const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
     queryKey: ['transactions'],
-    queryFn: () => getTransactions({ pageSize: 100 }),
+    queryFn: () => transactionApi.getTransactions({ limit: 100 }),
   })
 
   // Calculate MRR, ARR, Churn
@@ -49,11 +49,31 @@ export default function Revenue() {
     return { mrr, arr, churnRate }
   }, [subscriptions, transactionsData])
 
+  // Transform backend data to match frontend types
+  const transformedSubscriptions = useMemo(() => {
+    if (!subscriptions) return []
+    return subscriptions.map((s: any) => ({
+      ...s,
+      id: s._id || s.id,
+      userId: s.customerId?._id || s.customerId || s.userId,
+    }))
+  }, [subscriptions])
+
+  const transformedTransactions = useMemo(() => {
+    if (!transactionsData?.items) return []
+    return transactionsData.items.map((t: any) => ({
+      ...t,
+      id: t._id || t.id,
+      userId: t.customerId?._id || t.customerId || t.userId,
+      subscriptionId: t.subscriptionId?._id || t.subscriptionId || t.subscriptionId,
+    }))
+  }, [transactionsData])
+
   // Revenue by plan
   const revenueByPlan = useMemo(() => {
-    if (!subscriptions) return []
+    if (!transformedSubscriptions) return []
     const planMap = new Map<string, number>()
-    subscriptions
+    transformedSubscriptions
       .filter((s) => s.status === 'active')
       .forEach((s) => {
         const current = planMap.get(s.plan) || 0
@@ -63,7 +83,7 @@ export default function Revenue() {
       plan,
       revenue,
     }))
-  }, [subscriptions])
+  }, [transformedSubscriptions])
 
   const transactionColumns: Column<Transaction>[] = [
     {
@@ -178,7 +198,7 @@ export default function Revenue() {
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Transactions</h2>
         <DataTable
           columns={transactionColumns}
-          data={transactionsData?.data.slice(0, 20) || []}
+          data={transformedTransactions.slice(0, 20)}
           loading={isLoading}
         />
       </div>

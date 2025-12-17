@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, Plus, Edit } from 'lucide-react'
-import { getUsers, type GetUsersParams } from '@/api/mockApi'
+import { customerApi } from '@/api/api'
 import DataTable, { type Column } from '@/components/DataTable'
 import UserDetailDrawer from '@/components/UserDetailDrawer'
 import UserForm from '@/components/UserForm'
@@ -11,18 +11,18 @@ import { format } from 'date-fns'
 export default function Users() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState<GetUsersParams['sortBy']>('signupDate')
+  const [sortBy, setSortBy] = useState<string>('signupDate')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['users', page, search, sortBy, sortOrder],
+    queryKey: ['customers', page, search, sortBy, sortOrder],
     queryFn: () =>
-      getUsers({
+      customerApi.getCustomers({
         page,
-        pageSize: 20,
+        limit: 20,
         search,
         sortBy,
         sortOrder,
@@ -30,7 +30,7 @@ export default function Users() {
   })
 
   const handleSort = (key: string, order: 'asc' | 'desc') => {
-    setSortBy(key as GetUsersParams['sortBy'])
+    setSortBy(key)
     setSortOrder(order)
   }
 
@@ -48,9 +48,9 @@ export default function Users() {
     {
       key: 'plan',
       header: 'Plan',
-      render: (user) => {
-        // This would ideally come from subscription data
-        return <span className="text-gray-600">-</span>
+      render: () => {
+        // Plan would come from subscription data - to be implemented
+        return <span className="text-gray-600 dark:text-gray-400">-</span>
       },
     },
     {
@@ -94,7 +94,7 @@ export default function Users() {
             <span>Edit</span>
           </button>
           <button
-            onClick={() => setSelectedUserId(user.id)}
+            onClick={() => setSelectedUserId((user as any)._id || (user as any).id)}
             className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 text-sm font-medium"
             title="View details"
           >
@@ -160,7 +160,7 @@ export default function Users() {
       {/* Table */}
       <DataTable
         columns={columns}
-        data={data?.data || []}
+        data={data?.items || []}
         loading={isLoading}
         onSort={handleSort}
         sortKey={sortBy}
@@ -171,8 +171,8 @@ export default function Users() {
       {data && data.totalPages > 1 && (
         <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow p-4 transition-colors">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {(data.page - 1) * data.pageSize + 1} to{' '}
-            {Math.min(data.page * data.pageSize, data.total)} of {data.total} users
+            Showing {(data.page - 1) * data.limit + 1} to{' '}
+            {Math.min(data.page * data.limit, data.total)} of {data.total} users
           </div>
           <div className="flex space-x-2">
             <button

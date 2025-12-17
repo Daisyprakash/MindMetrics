@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FileText, Download, Loader2 } from 'lucide-react'
-import { getReports, generateReport } from '@/api/mockApi'
+import { reportApi } from '@/api/api'
 import type { Report, ReportType } from '@/types'
-import { format } from 'date-fns'
+import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 
 export default function Reports() {
   const queryClient = useQueryClient()
@@ -11,11 +11,34 @@ export default function Reports() {
 
   const { data: reports, isLoading } = useQuery({
     queryKey: ['reports'],
-    queryFn: getReports,
+    queryFn: () => reportApi.getReports(),
   })
 
   const generateMutation = useMutation({
-    mutationFn: generateReport,
+    mutationFn: (type: ReportType) => {
+      const now = new Date()
+      let periodStart: Date
+      let periodEnd: Date
+
+      if (type === 'monthly') {
+        periodStart = startOfMonth(subMonths(now, 1))
+        periodEnd = endOfMonth(subMonths(now, 1))
+      } else if (type === 'quarterly') {
+        const quarter = Math.floor(now.getMonth() / 3)
+        periodStart = new Date(now.getFullYear(), quarter * 3, 1)
+        periodEnd = new Date(now.getFullYear(), (quarter + 1) * 3, 0)
+      } else {
+        // Custom - last 30 days
+        periodStart = subMonths(now, 1)
+        periodEnd = now
+      }
+
+      return reportApi.generateReport({
+        type,
+        periodStart: periodStart.toISOString(),
+        periodEnd: periodEnd.toISOString(),
+      })
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] })
     },
@@ -90,8 +113,8 @@ export default function Reports() {
           </div>
         ) : reports && reports.length > 0 ? (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {reports.map((report) => (
-              <ReportRow key={report.id} report={report} />
+            {reports.map((report: any) => (
+              <ReportRow key={report._id || report.id} report={report} />
             ))}
           </div>
         ) : (
@@ -104,19 +127,27 @@ export default function Reports() {
   )
 }
 
-function ReportRow({ report }: { report: Report }) {
+function ReportRow({ report }: { report: any }) {
+  const reportId = report._id || report.id
+  const reportType = report.type
+  const generatedAt = report.createdAt || report.generatedAt
+  const summary = report.summary || {}
+  const metrics = Object.keys(summary).filter((k) => summary[k] !== undefined)
+
   return (
     <div className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between transition-colors">
       <div className="flex items-center space-x-4">
         <FileText className="w-5 h-5 text-gray-400 dark:text-gray-500" />
         <div>
-          <p className="font-medium text-gray-900 dark:text-white capitalize">{report.type} Report</p>
+          <p className="font-medium text-gray-900 dark:text-white capitalize">{reportType} Report</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Generated: {format(new Date(report.generatedAt), 'MMM d, yyyy HH:mm')}
+            Generated: {generatedAt ? format(new Date(generatedAt), 'MMM d, yyyy HH:mm') : 'N/A'}
           </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Metrics: {report.metrics.join(', ')}
-          </p>
+          {metrics.length > 0 && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Metrics: {metrics.join(', ')}
+            </p>
+          )}
         </div>
       </div>
       <div className="flex items-center space-x-4">

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Users, TrendingUp, DollarSign, Target } from 'lucide-react'
-import { getUsers, getTransactions, getUsageEvents, getAnalyticsData } from '@/api/mockApi'
+import { analyticsApi } from '@/api/api'
 import KPICard from '@/components/KPICard'
 import TrendChart from '@/components/charts/TrendChart'
 import { subDays, format } from 'date-fns'
@@ -17,70 +17,52 @@ export default function Dashboard() {
     }
   }, [])
 
-  // Fetch all data
-  const { data: usersData, isLoading: usersLoading } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => getUsers({ pageSize: 1000 }),
+  // Fetch overview data
+  const { data: overviewData, isLoading: overviewLoading } = useQuery({
+    queryKey: ['analytics', 'overview', dateRange],
+    queryFn: () => analyticsApi.getOverview(dateRange.from, dateRange.to),
   })
 
-  const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
-    queryKey: ['transactions', dateRange],
-    queryFn: () => getTransactions({ dateRange }),
+  // Fetch trends data
+  const { data: trendsData, isLoading: trendsLoading } = useQuery({
+    queryKey: ['analytics', 'trends', selectedMetric, dateRange],
+    queryFn: () =>
+      analyticsApi.getTrends(selectedMetric, dateRange.from, dateRange.to, 'day'),
   })
 
-  const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
-    queryKey: ['analytics', dateRange],
-    queryFn: () => getAnalyticsData({ dateRange }),
-  })
-
-  // Calculate KPIs
+  // KPIs from API
   const kpis = useMemo(() => {
-    if (!usersData || !transactionsData || !analyticsData) {
+    if (!overviewData) {
       return {
         totalUsers: 0,
         activeUsers: 0,
         monthlyRevenue: 0,
         conversionRate: 0,
+        mrr: 0,
       }
     }
 
-    const totalUsers = usersData.total
-    const sevenDaysAgo = subDays(new Date(), 7)
-    const activeUsers = usersData.data.filter(
-      (u) => new Date(u.lastActiveAt) >= sevenDaysAgo
-    ).length
-
-    const monthlyRevenue = transactionsData.data
-      .filter((t) => t.status === 'success')
-      .reduce((sum, t) => sum + t.amount, 0)
-
-    const paidUsers = usersData.data.filter((u) => {
-      // Check if user has a paid subscription (simplified)
-      return u.status === 'active'
-    }).length
-
-    const conversionRate = totalUsers > 0 ? (paidUsers / totalUsers) * 100 : 0
-
     return {
-      totalUsers,
-      activeUsers,
-      monthlyRevenue,
-      conversionRate,
+      totalUsers: overviewData.totalUsers,
+      activeUsers: overviewData.activeUsers,
+      monthlyRevenue: overviewData.monthlyRevenue,
+      conversionRate: overviewData.conversionRate * 100, // Convert to percentage
+      mrr: overviewData.mrr,
     }
-  }, [usersData, transactionsData, analyticsData])
+  }, [overviewData])
 
   // Prepare chart data
   const chartData = useMemo(() => {
-    if (!analyticsData) return []
-    return analyticsData.chartPoints.map((point) => ({
+    if (!trendsData) return []
+    return trendsData.map((point) => ({
       date: point.date,
-      users: point.users,
-      revenue: point.revenue,
-      sessions: point.sessions,
+      users: selectedMetric === 'users' ? point.value : 0,
+      revenue: selectedMetric === 'revenue' ? point.value : 0,
+      sessions: selectedMetric === 'sessions' ? point.value : 0,
     }))
-  }, [analyticsData])
+  }, [trendsData, selectedMetric])
 
-  const isLoading = usersLoading || transactionsLoading || analyticsLoading
+  const isLoading = overviewLoading || trendsLoading
 
   return (
     <div className="space-y-6">

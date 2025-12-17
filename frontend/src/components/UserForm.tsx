@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Sparkles } from 'lucide-react'
-import type { User, UserRole, UserStatus } from '@/types'
-import { createUser, updateUser, type CreateUserData, type UpdateUserData } from '@/api/mockApi'
+import type { User, UserStatus } from '@/types'
+import { customerApi } from '@/api/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { generateRandomUserData } from '@/utils/randomData'
 
@@ -16,23 +16,22 @@ const regions = ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Mi
 
 export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormProps) {
   const queryClient = useQueryClient()
-  const [formData, setFormData] = useState<CreateUserData>({
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'Member',
-    status: 'active',
+    status: 'active' as UserStatus,
     region: 'North America',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const isEditMode = !!user
+  const userId = (user as any)?._id || user?.id
 
   useEffect(() => {
     if (user) {
       setFormData({
         name: user.name,
         email: user.email,
-        role: user.role,
         status: user.status,
         region: user.region,
       })
@@ -41,7 +40,6 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
       setFormData({
         name: '',
         email: '',
-        role: 'Member',
         status: 'active',
         region: 'North America',
       })
@@ -50,19 +48,20 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
   }, [user, isOpen])
 
   const createMutation = useMutation({
-    mutationFn: createUser,
+    mutationFn: (data: { name: string; email: string; region: string; status?: string }) =>
+      customerApi.createCustomer(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
       onSuccess?.()
       onClose()
     },
   })
 
   const updateMutation = useMutation({
-    mutationFn: (updates: UpdateUserData) => updateUser(user!.id, updates),
+    mutationFn: (updates: Partial<User>) => customerApi.updateCustomer(userId!, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
-      queryClient.invalidateQueries({ queryKey: ['user', user!.id] })
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+      queryClient.invalidateQueries({ queryKey: ['customer', userId] })
       onSuccess?.()
       onClose()
     },
@@ -99,7 +98,7 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
     }
   }
 
-  const handleChange = (field: keyof CreateUserData, value: string) => {
+  const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     // Clear error when user starts typing
     if (errors[field]) {
@@ -205,23 +204,6 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                 )}
               </div>
 
-              {/* Role */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Role
-                </label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => handleChange('role', e.target.value as UserRole)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  disabled={isLoading}
-                >
-                  <option value="Admin">Admin</option>
-                  <option value="Member">Member</option>
-                  <option value="Viewer">Viewer</option>
-                </select>
-              </div>
-
               {/* Status */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -235,7 +217,7 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
-                  <option value="suspended">Suspended</option>
+                  <option value="churned">Churned</option>
                 </select>
               </div>
 

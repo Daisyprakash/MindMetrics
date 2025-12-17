@@ -1,109 +1,182 @@
 # SaaS Analytics Dashboard
 
-A comprehensive B2B SaaS Analytics & Operations Platform built with React, TypeScript, and modern frontend tooling.
+A full-stack B2B SaaS Analytics & Operations Platform for tracking customer metrics, revenue, subscriptions, and usage analytics.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 .
-├── frontend/          # All frontend code and configuration
-│   ├── src/           # Source code
-│   ├── package.json   # Dependencies
-│   ├── scripts/       # Utility scripts
-│   └── ...            # Frontend config files
+├── frontend/          # React + Vite frontend application
+├── backend/           # Node.js + Express + MongoDB backend API
 └── README.md          # This file
 ```
 
-## 🚀 Getting Started
+## Quick Start
 
-### Prerequisites
+### Backend Setup
 
-- Node.js 18+
-- npm or yarn
-
-### Installation & Running
-
+1. Navigate to backend directory:
 ```bash
-# Navigate to frontend directory
-cd frontend
+cd backend
+```
 
-# Install dependencies
+2. Install dependencies:
+```bash
 npm install
+```
 
-# Start development server
+3. Create `.env` file (copy from `.env.example`):
+```bash
+cp .env.example .env
+```
+
+4. Update `.env` with your MongoDB connection:
+```
+MONGODB_URI=mongodb://localhost:27017/saas-analytics
+JWT_SECRET=your-super-secret-jwt-key
+PORT=3000
+FRONTEND_URL=http://localhost:5173
+```
+
+5. Seed the database (optional):
+```bash
+npm run seed
+```
+
+6. Start the backend server:
+```bash
 npm run dev
-
-# Build for production
-npm run build
 ```
 
-The app will be available at `http://localhost:5173`
+Backend will run on `http://localhost:3000`
 
-## 📊 Features
+### Frontend Setup
 
-- **Authentication**: Login/Logout system
-- **Dashboard**: Real-time KPIs and trend charts
-- **Analytics**: Deep dive with filters and retention analysis
-- **Users**: Full CRUD operations with search and pagination
-- **Revenue**: MRR, ARR, churn tracking
-- **Reports**: Generate and download reports
-- **Settings**: Account management
-- **Profile**: User profile page
-- **Dark Mode**: Full dark mode support
-- **Data Persistence**: All data stored in JSON files
-
-## 🏗️ Architecture
-
-### Frontend Structure
-
-```
-frontend/
-├── src/
-│   ├── api/          # API layer (mock)
-│   ├── components/   # Reusable components
-│   ├── contexts/     # React contexts (Auth, Theme)
-│   ├── pages/        # Page components
-│   ├── types/        # TypeScript definitions
-│   ├── utils/        # Utility functions
-│   └── mock/         # Mock data and generators
+1. Navigate to frontend directory:
+```bash
+cd frontend
 ```
 
-### Data Storage
+2. Install dependencies:
+```bash
+npm install
+```
 
-All data is persisted in JSON files located in `frontend/src/mock/data/`:
-- `users-custom.json` - User data
-- `account.json` - Account settings
-- `subscriptions.json` - Subscription data
-- `transactions.json` - Transaction records
-- `usageEvents.json` - Usage events
-- `reports.json` - Generated reports
+3. Create `.env` file:
+```bash
+echo "VITE_API_URL=http://localhost:3000/api" > .env
+```
 
-## 🧪 Testing Features
+4. Start the frontend:
+```bash
+npm run dev
+```
 
-- **Generate Random Data**: Click "Generate Random" buttons in forms to auto-fill data
-- **Seed Data**: All JSON files come with sample data for immediate testing
+Frontend will run on `http://localhost:5173`
 
-## 📝 Documentation
+## First Time Setup
 
-All documentation is located in the `frontend/` folder:
-- `frontend/README.md` - Detailed frontend documentation
-- `frontend/DATA_PERSISTENCE.md` - Data persistence guide
-- `frontend/QUICK_START.md` - Quick start guide
+1. **Start MongoDB** (if using local MongoDB)
 
-## 🛠️ Tech Stack
+2. **Start Backend**:
+   ```bash
+   cd backend
+   npm run dev
+   ```
 
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **React Router** - Navigation
-- **TanStack Query** - Data fetching
-- **Recharts** - Data visualization
-- **Tailwind CSS** - Styling
+3. **Start Frontend**:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
 
-## 📄 License
+4. **Register First User**:
+   - Navigate to `http://localhost:5173/login`
+   - Click "Don't have an account? Register"
+   - Fill in the registration form:
+     - Name
+     - Organization Name
+     - Industry
+     - Email
+     - Password (min 6 characters)
+   - This creates your organization and first admin user
 
-This project is built for demonstration purposes.
+5. **Or Use Seed Data**:
+   - Run `npm run seed` in the backend directory
+   - Login with:
+     - Email: `admin@example.com`
+     - Password: `password123`
 
----
+## Features
 
-**For detailed frontend documentation, see `frontend/README.md`**
+### Backend
+- RESTful API with Express
+- MongoDB database with Mongoose
+- JWT authentication
+- CRUD operations for all entities
+- Analytics and reporting endpoints
+- CORS enabled
+
+### Frontend
+- React + TypeScript
+- TanStack Query for data fetching
+- React Router for navigation
+- Tailwind CSS for styling
+- Dark mode support
+- Responsive design
+
+## Tech Stack
+
+### Backend
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+- JWT (jsonwebtoken)
+- bcryptjs
+
+### Frontend
+- React
+- TypeScript
+- Vite
+- TanStack Query
+- React Router
+- Tailwind CSS
+- Recharts
+- Lucide React
+
+## API Documentation
+
+See `backend/README.md` for detailed API documentation.
+
+## Environment Variables
+
+### Backend (.env)
+```
+MONGODB_URI=mongodb://localhost:27017/saas-analytics
+JWT_SECRET=your-super-secret-jwt-key
+PORT=3000
+FRONTEND_URL=http://localhost:5173
+NODE_ENV=development
+```
+
+### Frontend (.env)
+```
+VITE_API_URL=http://localhost:3000/api
+```
+
+## Development
+
+### Backend
+- `npm run dev` - Start development server with watch mode
+- `npm start` - Start production server
+- `npm run seed` - Seed database with sample data
+
+### Frontend
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+## License
+
+MIT

@@ -1,6 +1,6 @@
 import { X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { getUser, getSubscriptionsByUser, getUsageEvents } from '@/api/mockApi'
+import { customerApi, subscriptionApi, usageEventApi } from '@/api/api'
 import type { User } from '@/types'
 import { format } from 'date-fns'
 
@@ -10,23 +10,17 @@ interface UserDetailDrawerProps {
 }
 
 export default function UserDetailDrawer({ userId, onClose }: UserDetailDrawerProps) {
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['user', userId],
-    queryFn: () => getUser(userId!),
+  const { data: customerData, isLoading: userLoading } = useQuery({
+    queryKey: ['customer', userId],
+    queryFn: () => customerApi.getCustomer(userId!),
     enabled: !!userId,
   })
 
-  const { data: subscriptions, isLoading: subscriptionsLoading } = useQuery({
-    queryKey: ['user-subscriptions', userId],
-    queryFn: () => getSubscriptionsByUser(userId!),
-    enabled: !!userId,
-  })
+  const user = customerData?.customer
+  const subscriptions = customerData?.subscriptions || []
+  const recentActivity = customerData?.recentActivity || []
 
-  const { data: recentActivity, isLoading: activityLoading } = useQuery({
-    queryKey: ['user-activity', userId],
-    queryFn: () => getUsageEvents({ userId: userId! }),
-    enabled: !!userId,
-  })
+  const isLoading = userLoading
 
   if (!userId) return null
 
@@ -72,10 +66,6 @@ export default function UserDetailDrawer({ userId, onClose }: UserDetailDrawerPr
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{user.email}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Role</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{user.role}</p>
-                  </div>
-                  <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
                     <span
                       className={`inline-block px-2 py-1 text-xs font-medium rounded ${
@@ -96,13 +86,13 @@ export default function UserDetailDrawer({ userId, onClose }: UserDetailDrawerPr
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Signup Date</p>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {format(new Date(user.signupDate), 'MMM d, yyyy')}
+                      {user.signupDate ? format(new Date(user.signupDate), 'MMM d, yyyy') : 'N/A'}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Last Active</p>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {format(new Date(user.lastActiveAt), 'MMM d, yyyy HH:mm')}
+                      {user.lastActiveAt ? format(new Date(user.lastActiveAt), 'MMM d, yyyy HH:mm') : 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -111,11 +101,9 @@ export default function UserDetailDrawer({ userId, onClose }: UserDetailDrawerPr
               {/* Subscription Section */}
               <section className="mb-6">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Subscription</h3>
-                {subscriptionsLoading ? (
-                  <div className="animate-pulse h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                ) : subscriptions && subscriptions.length > 0 ? (
-                  subscriptions.map((sub) => (
-                    <div key={sub.id} className="bg-gray-50 dark:bg-gray-700/50 rounded p-3">
+                {subscriptions && subscriptions.length > 0 ? (
+                  subscriptions.map((sub: any) => (
+                    <div key={sub._id || sub.id} className="bg-gray-50 dark:bg-gray-700/50 rounded p-3">
                       <div className="flex justify-between items-center mb-2">
                         <span className="font-medium text-gray-900 dark:text-white">{sub.plan}</span>
                         <span
@@ -134,7 +122,7 @@ export default function UserDetailDrawer({ userId, onClose }: UserDetailDrawerPr
                         ${sub.pricePerMonth}/month
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Started: {format(new Date(sub.startDate), 'MMM d, yyyy')}
+                        Started: {sub.startDate ? format(new Date(sub.startDate), 'MMM d, yyyy') : 'N/A'}
                       </p>
                     </div>
                   ))
@@ -146,17 +134,11 @@ export default function UserDetailDrawer({ userId, onClose }: UserDetailDrawerPr
               {/* Recent Activity */}
               <section>
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Recent Activity</h3>
-                {activityLoading ? (
-                  <div className="animate-pulse space-y-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                    ))}
-                  </div>
-                ) : recentActivity && recentActivity.length > 0 ? (
+                {recentActivity && recentActivity.length > 0 ? (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {recentActivity.slice(0, 10).map((event) => (
+                    {recentActivity.slice(0, 10).map((event: any) => (
                       <div
-                        key={event.id}
+                        key={event._id || event.id}
                         className="bg-gray-50 dark:bg-gray-700/50 rounded p-2 text-xs"
                       >
                         <div className="flex justify-between">
@@ -164,7 +146,11 @@ export default function UserDetailDrawer({ userId, onClose }: UserDetailDrawerPr
                             {event.eventType}
                           </span>
                           <span className="text-gray-500 dark:text-gray-400">
-                            {format(new Date(event.timestamp), 'MMM d, HH:mm')}
+                            {event.createdAt
+                              ? format(new Date(event.createdAt), 'MMM d, HH:mm')
+                              : event.timestamp
+                              ? format(new Date(event.timestamp), 'MMM d, HH:mm')
+                              : 'N/A'}
                           </span>
                         </div>
                         {event.feature && (

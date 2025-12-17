@@ -1,10 +1,9 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { subDays, format } from 'date-fns'
-import { getAnalyticsData } from '@/api/mockApi'
+import { analyticsApi } from '@/api/api'
 import TrendChart from '@/components/charts/TrendChart'
 import RetentionChart from '@/components/charts/RetentionChart'
-import type { AnalyticsFilters } from '@/types'
 
 export default function Analytics() {
   const [dateRange, setDateRange] = useState({
@@ -14,30 +13,33 @@ export default function Analytics() {
 
   const [selectedMetric, setSelectedMetric] = useState<'users' | 'revenue' | 'sessions'>('users')
 
-  const filters: AnalyticsFilters = useMemo(
-    () => ({
-      dateRange: {
-        from: new Date(dateRange.from).toISOString(),
-        to: new Date(dateRange.to).toISOString(),
-      },
-    }),
-    [dateRange]
-  )
+  const { data: trendsData, isLoading: trendsLoading } = useQuery({
+    queryKey: ['analytics', 'trends', selectedMetric, dateRange],
+    queryFn: () =>
+      analyticsApi.getTrends(
+        selectedMetric,
+        new Date(dateRange.from).toISOString(),
+        new Date(dateRange.to).toISOString(),
+        'day'
+      ),
+  })
 
-  const { data: analyticsData, isLoading } = useQuery({
-    queryKey: ['analytics', filters],
-    queryFn: () => getAnalyticsData(filters),
+  const { data: retentionData, isLoading: retentionLoading } = useQuery({
+    queryKey: ['analytics', 'retention'],
+    queryFn: () => analyticsApi.getRetention(),
   })
 
   const chartData = useMemo(() => {
-    if (!analyticsData) return []
-    return analyticsData.chartPoints.map((point) => ({
+    if (!trendsData) return []
+    return trendsData.map((point) => ({
       date: point.date,
-      users: point.users,
-      revenue: point.revenue,
-      sessions: point.sessions,
+      users: selectedMetric === 'users' ? point.value : 0,
+      revenue: selectedMetric === 'revenue' ? point.value : 0,
+      sessions: selectedMetric === 'sessions' ? point.value : 0,
     }))
-  }, [analyticsData])
+  }, [trendsData, selectedMetric])
+
+  const isLoading = trendsLoading || retentionLoading
 
   return (
     <div className="space-y-6">
@@ -101,7 +103,12 @@ export default function Analytics() {
       {/* Retention Chart */}
       <div>
         <RetentionChart
-          data={analyticsData?.retentionData || []}
+          data={
+            retentionData?.map((r) => ({
+              cohort: r.cohort,
+              retentionRate: r.retentionRate,
+            })) || []
+          }
           loading={isLoading}
         />
       </div>
