@@ -1,0 +1,9 @@
+{
+  "id": "acc_001",
+  "name": "Digital Innovations",
+  "industry": "Ecommerce",
+  "createdAt": "2023-01-15T00:00:00.000Z",
+  "timezone": "Asia/Shanghai",
+  "currency": "USD",
+  "plan": "Pro"
+}

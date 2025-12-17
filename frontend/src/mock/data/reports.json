@@ -1,0 +1,30 @@
+[
+  {
+    "id": "report_001",
+    "type": "monthly",
+    "generatedAt": "2024-12-01T00:00:00.000Z",
+    "status": "ready",
+    "metrics": ["users", "revenue", "churn", "retention"]
+  },
+  {
+    "id": "report_002",
+    "type": "monthly",
+    "generatedAt": "2024-11-01T00:00:00.000Z",
+    "status": "ready",
+    "metrics": ["users", "revenue", "churn", "retention"]
+  },
+  {
+    "id": "report_003",
+    "type": "quarterly",
+    "generatedAt": "2024-10-01T00:00:00.000Z",
+    "status": "ready",
+    "metrics": ["users", "revenue", "churn", "retention", "engagement"]
+  },
+  {
+    "id": "report_004",
+    "type": "custom",
+    "generatedAt": "2024-12-10T14:30:00.000Z",
+    "status": "ready",
+    "metrics": ["users", "revenue"]
+  }
+]

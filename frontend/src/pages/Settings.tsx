@@ -1,0 +1,208 @@
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Save, Loader2, Sparkles } from 'lucide-react'
+import { getAccount, updateAccount } from '@/api/mockApi'
+import type { Account, Industry, Currency, AccountPlan } from '@/types'
+
+const companyNames = [
+  'Acme Corporation', 'Tech Solutions Inc', 'Digital Innovations', 
+  'Cloud Services Co', 'Data Analytics Pro', 'Enterprise Systems'
+]
+const industries: Industry[] = ['SaaS', 'Ecommerce', 'Fintech']
+const currencies: Currency[] = ['USD', 'EUR', 'INR']
+const plans: AccountPlan[] = ['Starter', 'Pro', 'Enterprise']
+const timezones = [
+  'America/New_York', 'America/Los_Angeles', 'Europe/London', 
+  'Europe/Paris', 'Asia/Tokyo', 'Asia/Shanghai', 'Australia/Sydney'
+]
+
+const randomChoice = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
+
+export default function Settings() {
+  const queryClient = useQueryClient()
+  const [isDirty, setIsDirty] = useState(false)
+
+  const { data: account, isLoading } = useQuery({
+    queryKey: ['account'],
+    queryFn: getAccount,
+  })
+
+  const [formData, setFormData] = useState<Partial<Account>>({})
+
+  const updateMutation = useMutation({
+    mutationFn: updateAccount,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['account'] })
+      setIsDirty(false)
+      alert('Settings saved successfully!')
+    },
+    onError: () => {
+      alert('Failed to save settings. Please try again.')
+    },
+  })
+
+  const handleChange = (field: keyof Account, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    setIsDirty(true)
+  }
+
+  const handleGenerateRandom = () => {
+    setFormData({
+      name: randomChoice(companyNames),
+      industry: randomChoice(industries),
+      timezone: randomChoice(timezones),
+      currency: randomChoice(currencies),
+      plan: randomChoice(plans),
+    })
+    setIsDirty(true)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (account) {
+      updateMutation.mutate(formData)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!account) {
+    return <div className="text-gray-900 dark:text-white">Account not found</div>
+  }
+
+  const currentData = { ...account, ...formData }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your account preferences</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Generate Random Button */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 transition-colors">
+          <button
+            type="button"
+            onClick={handleGenerateRandom}
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Generate Random Account Data</span>
+          </button>
+        </div>
+
+        {/* Profile Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Profile</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Company Name
+              </label>
+              <input
+                type="text"
+                value={currentData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Industry
+              </label>
+              <select
+                value={currentData.industry}
+                onChange={(e) => handleChange('industry', e.target.value as Industry)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="SaaS">SaaS</option>
+                <option value="Ecommerce">Ecommerce</option>
+                <option value="Fintech">Fintech</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Timezone
+              </label>
+              <input
+                type="text"
+                value={currentData.timezone}
+                onChange={(e) => handleChange('timezone', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder="America/New_York"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Preferences Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Preferences</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Currency
+              </label>
+              <select
+                value={currentData.currency}
+                onChange={(e) => handleChange('currency', e.target.value as Currency)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="INR">INR (₹)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Plan
+              </label>
+              <select
+                value={currentData.plan}
+                onChange={(e) => handleChange('plan', e.target.value as AccountPlan)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="Starter">Starter</option>
+                <option value="Pro">Pro</option>
+                <option value="Enterprise">Enterprise</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={!isDirty || updateMutation.isPending}
+            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+          >
+            {updateMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Save Changes</span>
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "txn_001",
+    "userId": "user_001",
+    "subscriptionId": "sub_001",
+    "amount": 99,
+    "currency": "USD",
+    "status": "success",
+    "createdAt": "2024-12-01T10:00:00.000Z"
+  },
+  {
+    "id": "txn_002",
+    "userId": "user_002",
+    "subscriptionId": "sub_002",
+    "amount": 29,
+    "currency": "USD",
+    "status": "success",
+    "createdAt": "2024-12-01T11:30:00.000Z"
+  },
+  {
+    "id": "txn_003",
+    "userId": "user_001",
+    "subscriptionId": "sub_001",
+    "amount": 99,
+    "currency": "USD",
+    "status": "success",
+    "createdAt": "2024-11-01T10:00:00.000Z"
+  },
+  {
+    "id": "txn_004",
+    "userId": "user_004",
+    "subscriptionId": "sub_004",
+    "amount": 99,
+    "currency": "USD",
+    "status": "success",
+    "createdAt": "2024-12-05T14:20:00.000Z"
+  },
+  {
+    "id": "txn_005",
+    "userId": "user_002",
+    "subscriptionId": "sub_002",
+    "amount": 29,
+    "currency": "USD",
+    "status": "failed",
+    "createdAt": "2024-11-20T09:15:00.000Z"
+  },
+  {
+    "id": "txn_006",
+    "userId": "user_004",
+    "subscriptionId": "sub_004",
+    "amount": 99,
+    "currency": "USD",
+    "status": "success",
+    "createdAt": "2024-11-05T14:20:00.000Z"
+  }
+]

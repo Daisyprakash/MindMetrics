@@ -1,0 +1,69 @@
+[
+  {
+    "id": "event_001",
+    "userId": "user_001",
+    "eventType": "login",
+    "timestamp": "2024-12-14T08:30:00.000Z"
+  },
+  {
+    "id": "event_002",
+    "userId": "user_001",
+    "eventType": "session_start",
+    "timestamp": "2024-12-14T08:31:00.000Z",
+    "sessionDuration": 3600
+  },
+  {
+    "id": "event_003",
+    "userId": "user_001",
+    "eventType": "feature_used",
+    "feature": "dashboard",
+    "timestamp": "2024-12-14T08:35:00.000Z"
+  },
+  {
+    "id": "event_004",
+    "userId": "user_002",
+    "eventType": "login",
+    "timestamp": "2024-12-14T09:15:00.000Z"
+  },
+  {
+    "id": "event_005",
+    "userId": "user_002",
+    "eventType": "session_start",
+    "timestamp": "2024-12-14T09:16:00.000Z",
+    "sessionDuration": 1800
+  },
+  {
+    "id": "event_006",
+    "userId": "user_002",
+    "eventType": "feature_used",
+    "feature": "analytics",
+    "timestamp": "2024-12-14T09:20:00.000Z"
+  },
+  {
+    "id": "event_007",
+    "userId": "user_004",
+    "eventType": "login",
+    "timestamp": "2024-12-14T10:00:00.000Z"
+  },
+  {
+    "id": "event_008",
+    "userId": "user_004",
+    "eventType": "session_start",
+    "timestamp": "2024-12-14T10:01:00.000Z",
+    "sessionDuration": 5400
+  },
+  {
+    "id": "event_009",
+    "userId": "user_004",
+    "eventType": "feature_used",
+    "feature": "reports",
+    "timestamp": "2024-12-14T10:05:00.000Z"
+  },
+  {
+    "id": "event_010",
+    "userId": "user_001",
+    "eventType": "feature_used",
+    "feature": "api_access",
+    "timestamp": "2024-12-14T11:00:00.000Z"
+  }
+]
