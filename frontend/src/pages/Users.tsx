@@ -48,9 +48,21 @@ export default function Users() {
     {
       key: 'plan',
       header: 'Plan',
-      render: () => {
-        // Plan would come from subscription data - to be implemented
-        return <span className="text-gray-600 dark:text-gray-400">-</span>
+      render: (user) => {
+        const plan = (user as any).plan || 'Free'
+        return (
+          <span
+            className={`px-2 py-1 text-xs font-medium rounded ${
+              plan === 'Pro'
+                ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
+                : plan === 'Basic'
+                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+            }`}
+          >
+            {plan}
+          </span>
+        )
       },
     },
     {

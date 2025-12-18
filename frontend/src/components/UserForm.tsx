@@ -21,6 +21,8 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
     email: '',
     status: 'active' as UserStatus,
     region: 'North America',
+    plan: 'Free',
+    pricePerMonth: 0,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -34,6 +36,8 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
         email: user.email,
         status: user.status,
         region: user.region,
+        plan: 'Free', // Defaults for edit mode if not available in user object
+        pricePerMonth: 0,
       })
     } else {
       // Reset form for new user
@@ -42,13 +46,15 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
         email: '',
         status: 'active',
         region: 'North America',
+        plan: 'Free',
+        pricePerMonth: 0,
       })
     }
     setErrors({})
   }, [user, isOpen])
 
   const createMutation = useMutation({
-    mutationFn: (data: { name: string; email: string; region: string; status?: string }) =>
+    mutationFn: (data: { name: string; email: string; region: string; status?: string; plan?: string; pricePerMonth?: number }) =>
       customerApi.createCustomer(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
@@ -110,7 +116,15 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
     if (isEditMode) return // Don't generate random data in edit mode
     
     const randomData = generateRandomUserData()
-    setFormData(randomData)
+    const plans = ['Free', 'Basic', 'Pro']
+    const plan = plans[Math.floor(Math.random() * plans.length)]
+    const prices: Record<string, number> = { Free: 0, Basic: 29, Pro: 99 }
+    
+    setFormData({
+      ...randomData,
+      plan,
+      pricePerMonth: prices[plan],
+    })
     setErrors({}) // Clear any errors
   }
 
@@ -221,6 +235,45 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                 </select>
               </div>
 
+              {/* Plan (Only in Add Mode) */}
+              {!isEditMode && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Subscription Plan
+                    </label>
+                    <select
+                      value={formData.plan}
+                      onChange={(e) => {
+                        const plan = e.target.value
+                        const prices: Record<string, number> = { Free: 0, Basic: 29, Pro: 99 }
+                        setFormData(prev => ({ ...prev, plan, pricePerMonth: prices[plan] }))
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      disabled={isLoading}
+                    >
+                      <option value="Free">Free ($0)</option>
+                      <option value="Basic">Basic ($29/mo)</option>
+                      <option value="Pro">Pro ($99/mo)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Price per Month (USD)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.pricePerMonth}
+                      onChange={(e) => handleChange('pricePerMonth', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      disabled={isLoading}
+                      min="0"
+                    />
+                  </div>
+                </>
+              )}
+
               {/* Region */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -282,4 +335,3 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
     </>
   )
 }
-

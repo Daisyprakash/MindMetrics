@@ -161,17 +161,14 @@ function ReportRow({ report }: { report: any }) {
           {report.status}
         </span>
         <button
-          className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
-          onClick={() => {
-            // Mock download - in real app, this would trigger actual download
-            alert('Download functionality would be implemented here')
-          }}
+          className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 disabled:opacity-50"
+          onClick={() => reportApi.downloadReport(reportId, 'csv')}
+          disabled={report.status !== 'completed'}
         >
           <Download className="w-4 h-4" />
-          <span>Download</span>
+          <span>Download CSV</span>
         </button>
       </div>
     </div>
   )
 }
-

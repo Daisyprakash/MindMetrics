@@ -41,6 +41,68 @@ router.get('/', async (req, res) => {
 })
 
 /**
+ * GET /reports/:id/download
+ * Download report as CSV or JSON
+ */
+router.get('/:id/download', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { format = 'csv' } = req.query
+    const organizationId = req.organizationId
+
+    const report = await Report.findOne({ _id: id, organizationId })
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        error: 'Report not found',
+      })
+    }
+
+    if (report.status !== 'completed') {
+      return res.status(400).json({
+        success: false,
+        error: 'Report is not ready for download',
+      })
+    }
+
+    const filename = `report-${report.type}-${id}`
+
+    if (format === 'json') {
+      res.setHeader('Content-Type', 'application/json')
+      res.setHeader('Content-Disposition', `attachment; filename=${filename}.json`)
+      return res.send(JSON.stringify(report, null, 2))
+    }
+
+    // Default to CSV
+    const summary = report.summary
+    const csvData = [
+      ['Metric', 'Value'],
+      ['Total Users', summary.totalUsers],
+      ['Active Users', summary.activeUsers],
+      ['Revenue', summary.revenue],
+      ['Churn Rate (%)', summary.churnRate],
+      ['MRR', summary.mrr],
+      ['ARR', summary.arr],
+      ['Period Start', report.periodStart.toISOString()],
+      ['Period End', report.periodEnd.toISOString()],
+      ['Generated At', report.createdAt.toISOString()],
+    ]
+
+    const csvString = csvData.map(row => row.join(',')).join('\n')
+
+    res.setHeader('Content-Type', 'text/csv')
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}.csv`)
+    res.send(csvString)
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    })
+  }
+})
+
+/**
  * POST /reports
  * Generate new report
  */

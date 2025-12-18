@@ -5,6 +5,7 @@
 import express from 'express'
 import Customer from '../models/Customer.js'
 import Subscription from '../models/Subscription.js'
+import Transaction from '../models/Transaction.js'
 import UsageEvent from '../models/UsageEvent.js'
 import { authenticate } from '../middleware/auth.js'
 
@@ -62,10 +63,28 @@ router.get('/', async (req, res) => {
       Customer.countDocuments(query),
     ])
 
+    // Fetch active subscriptions for these customers to show the plan in the table
+    const customerIds = items.map((customer) => customer._id)
+    const subscriptions = await Subscription.find({
+      organizationId,
+      customerId: { $in: customerIds },
+      status: 'active',
+    })
+
+    const itemsWithPlan = items.map((customer) => {
+      const sub = subscriptions.find(
+        (s) => s.customerId.toString() === customer._id.toString()
+      )
+      return {
+        ...customer.toObject(),
+        plan: sub ? sub.plan : 'Free',
+      }
+    })
+
     res.json({
       success: true,
       data: {
-        items,
+        items: itemsWithPlan,
         total,
         page: parseInt(page),
         limit: parseInt(limit),
@@ -133,11 +152,11 @@ router.get('/:id', async (req, res) => {
 
 /**
  * POST /customers
- * Create new customer
+ * Create new customer with optional initial subscription
  */
 router.post('/', async (req, res) => {
   try {
-    const { name, email, region, status = 'active' } = req.body
+    const { name, email, region, status = 'active', plan, pricePerMonth } = req.body
     const organizationId = req.organizationId
 
     if (!name || !email || !region) {
@@ -156,6 +175,39 @@ router.post('/', async (req, res) => {
       signupDate: new Date(),
       lastActiveAt: new Date(),
     })
+
+    // If plan details are provided, create a subscription and an initial transaction
+    if (plan && plan !== 'Free') {
+      const subscription = await Subscription.create({
+        organizationId,
+        customerId: customer._id,
+        plan,
+        pricePerMonth: pricePerMonth || 0,
+        status: 'active',
+        startDate: new Date(),
+      })
+
+      // Create an initial successful transaction for the first month
+      if (pricePerMonth > 0) {
+        await Transaction.create({
+          organizationId,
+          customerId: customer._id,
+          subscriptionId: subscription._id,
+          amount: pricePerMonth,
+          currency: 'USD',
+          status: 'success',
+        })
+      }
+    } else if (plan === 'Free') {
+      await Subscription.create({
+        organizationId,
+        customerId: customer._id,
+        plan: 'Free',
+        pricePerMonth: 0,
+        status: 'active',
+        startDate: new Date(),
+      })
+    }
 
     res.status(201).json({
       success: true,

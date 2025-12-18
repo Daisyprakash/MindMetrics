@@ -425,6 +425,32 @@ export const reportApi = {
       body: JSON.stringify(data),
     })
   },
+
+  /**
+   * Download report file
+   */
+  downloadReport: async (id: string, format: 'csv' | 'json' = 'csv') => {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(`${API_BASE_URL}/reports/${id}/download?format=${format}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to download report')
+    }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `report-${id}.${format}`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  },
 }
 
 // ==================== SETTINGS APIs ====================
