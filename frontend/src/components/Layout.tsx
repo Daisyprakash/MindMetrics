@@ -17,7 +17,6 @@ const navigation = [
   { name: 'Revenue', path: '/revenue' },
   { name: 'Reports', path: '/reports' },
   { name: 'Settings', path: '/settings' },
-  { name: 'Profile', path: '/profile' },
 ]
 
 export default function Layout({ children }: LayoutProps) {
@@ -49,13 +48,10 @@ export default function Layout({ children }: LayoutProps) {
             </div>
             <div className="flex items-center space-x-4">
               {user && (
-                <Link
-                  to="/profile"
-                  className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                >
+                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
                   <User className="w-4 h-4" />
                   <span>{user.name}</span>
-                </Link>
+                </div>
               )}
               {organization && (
                 <span className="px-2 py-1 text-xs font-medium bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded">

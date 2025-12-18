@@ -8,7 +8,6 @@ import Users from './pages/Users'
 import Revenue from './pages/Revenue'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
-import Profile from './pages/Profile'
 
 function App() {
   return (
@@ -26,7 +25,6 @@ function App() {
                 <Route path="/revenue" element={<Revenue />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/profile" element={<Profile />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>
