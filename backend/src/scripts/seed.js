@@ -1,11 +1,12 @@
 /**
- * Database Seed Script
+ * Database Seed Script - Large Scale Data Generation
  * 
  * This script:
  * 1. Deletes ALL existing data from the database
  * 2. Creates a new organization
  * 3. Creates an admin user (with SHA-256 hashed password)
- * 4. Creates multiple customers with subscriptions, transactions, and usage events
+ * 4. Creates 500 customers with subscriptions, transactions, and usage events
+ * 5. Generates data spanning the last 6 months
  * 
  * Usage: npm run seed (or node src/scripts/seed.js)
  */
@@ -34,6 +35,86 @@ function hashPasswordSHA256(password) {
  */
 function randomDate(start, end) {
   return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
+}
+
+/**
+ * Generate random customer name
+ */
+function generateRandomName() {
+  const firstNames = [
+    'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda',
+    'William', 'Elizabeth', 'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica',
+    'Thomas', 'Sarah', 'Charles', 'Karen', 'Christopher', 'Nancy', 'Daniel', 'Lisa',
+    'Matthew', 'Betty', 'Anthony', 'Margaret', 'Mark', 'Sandra', 'Donald', 'Ashley',
+    'Steven', 'Kimberly', 'Paul', 'Emily', 'Andrew', 'Donna', 'Joshua', 'Michelle',
+    'Kenneth', 'Carol', 'Kevin', 'Amanda', 'Brian', 'Dorothy', 'George', 'Melissa',
+    'Timothy', 'Deborah', 'Ronald', 'Stephanie', 'Edward', 'Rebecca', 'Jason', 'Sharon',
+    'Jeffrey', 'Laura', 'Ryan', 'Cynthia', 'Jacob', 'Kathleen', 'Gary', 'Amy',
+    'Nicholas', 'Angela', 'Eric', 'Shirley', 'Jonathan', 'Anna', 'Stephen', 'Brenda',
+    'Larry', 'Pamela', 'Justin', 'Emma', 'Scott', 'Nicole', 'Brandon', 'Helen',
+    'Benjamin', 'Samantha', 'Samuel', 'Katherine', 'Frank', 'Christine', 'Gregory', 'Debra',
+    'Raymond', 'Rachel', 'Alexander', 'Carolyn', 'Patrick', 'Janet', 'Jack', 'Virginia',
+    'Dennis', 'Maria', 'Jerry', 'Heather', 'Tyler', 'Diane', 'Aaron', 'Julie',
+    'Jose', 'Joyce', 'Henry', 'Victoria', 'Adam', 'Kelly', 'Douglas', 'Christina',
+    'Nathan', 'Joan', 'Zachary', 'Evelyn', 'Kyle', 'Judith', 'Noah', 'Megan',
+    'Ethan', 'Cheryl', 'Jeremy', 'Andrea', 'Walter', 'Hannah', 'Christian', 'Jacqueline',
+    'Keith', 'Martha', 'Roger', 'Gloria', 'Terry', 'Teresa', 'Gerald', 'Sara',
+    'Harold', 'Janice', 'Sean', 'Marie', 'Austin', 'Julia', 'Carl', 'Grace',
+    'Arthur', 'Judy', 'Lawrence', 'Theresa', 'Dylan', 'Madison', 'Jesse', 'Beverly',
+    'Jordan', 'Denise', 'Bryan', 'Marilyn', 'Billy', 'Amber', 'Joe', 'Danielle',
+    'Bruce', 'Rose', 'Gabriel', 'Brittany', 'Logan', 'Diana', 'Albert', 'Abigail',
+    'Alan', 'Jane', 'Juan', 'Lori', 'Wayne', 'Alexis', 'Roy', 'Marie',
+    'Ralph', 'Olivia', 'Randy', 'Catherine', 'Eugene', 'Frances', 'Vincent', 'Christina',
+    'Russell', 'Samantha', 'Louis', 'Deborah', 'Philip', 'Rachel', 'Bobby', 'Carolyn',
+    'Johnny', 'Janet', 'Willie', 'Virginia', 'Howard', 'Maria', 'Earl', 'Heather',
+  ]
+  const lastNames = [
+    'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis',
+    'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Wilson', 'Anderson', 'Thomas', 'Taylor',
+    'Moore', 'Jackson', 'Martin', 'Lee', 'Thompson', 'White', 'Harris', 'Sanchez',
+    'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King',
+    'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores', 'Green', 'Adams',
+    'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts',
+    'Gomez', 'Phillips', 'Evans', 'Turner', 'Diaz', 'Parker', 'Cruz', 'Edwards',
+    'Collins', 'Reyes', 'Stewart', 'Morris', 'Morales', 'Murphy', 'Cook', 'Rogers',
+    'Gutierrez', 'Ortiz', 'Morgan', 'Cooper', 'Peterson', 'Bailey', 'Reed', 'Kelly',
+    'Howard', 'Ramos', 'Kim', 'Cox', 'Ward', 'Richardson', 'Watson', 'Brooks',
+    'Chavez', 'Wood', 'James', 'Bennett', 'Gray', 'Mendoza', 'Ruiz', 'Hughes',
+    'Price', 'Alvarez', 'Castillo', 'Sanders', 'Patel', 'Myers', 'Long', 'Ross',
+    'Foster', 'Jimenez', 'Powell', 'Jenkins', 'Perry', 'Russell', 'Sullivan', 'Bell',
+    'Coleman', 'Butler', 'Henderson', 'Barnes', 'Gonzales', 'Fisher', 'Vasquez', 'Simmons',
+    'Romero', 'Jordan', 'Patterson', 'Alexander', 'Hamilton', 'Graham', 'Reynolds', 'Griffin',
+    'Wallace', 'Moreno', 'West', 'Cole', 'Hayes', 'Bryant', 'Herrera', 'Gibson',
+    'Ellis', 'Tran', 'Medina', 'Aguilar', 'Stevens', 'Murray', 'Ford', 'Castro',
+    'Marshall', 'Owens', 'Harrison', 'Fernandez', 'Mcdonald', 'Woods', 'Washington', 'Kennedy',
+    'Wells', 'Vargas', 'Henry', 'Chen', 'Freeman', 'Webb', 'Tucker', 'Guzman',
+    'Burns', 'Crawford', 'Olson', 'Simpson', 'Porter', 'Hunter', 'Gordon', 'Mendez',
+    'Silva', 'Shaw', 'Snyder', 'Mason', 'Dixon', 'Munoz', 'Hunt', 'Hicks',
+    'Holmes', 'Palmer', 'Wagner', 'Black', 'Robertson', 'Boyd', 'Rose', 'Stone',
+    'Salazar', 'Fox', 'Warren', 'Mills', 'Meyer', 'Rice', 'Schmidt', 'Garza',
+    'Daniels', 'Ferguson', 'Nichols', 'Stephens', 'Soto', 'Weaver', 'Ryan', 'Gardner',
+    'Payne', 'Grant', 'Dunn', 'Kelley', 'Spencer', 'Hawkins', 'Arnold', 'Pierce',
+    'Vazquez', 'Hansen', 'Peters', 'Santos', 'Hart', 'Bradley', 'Knight', 'Elliott',
+    'Cunningham', 'Duncan', 'Armstrong', 'Hudson', 'Carroll', 'Lane', 'Riley', 'Andrews',
+    'Alvarado', 'Ray', 'Delgado', 'Berry', 'Perkins', 'Hoffman', 'Johnston', 'Matthews',
+    'Pena', 'Richards', 'Contreras', 'Willis', 'Carpenter', 'Lawrence', 'Sandoval', 'Guerrero',
+    'George', 'Chapman', 'Rios', 'Estrada', 'Ortega', 'Watkins', 'Greene', 'Nunez',
+    'Wheeler', 'Valdez', 'Harper', 'Lynch', 'Meyer', 'Garza', 'Vargas', 'Watkins',
+  ]
+  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
+  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]
+  return `${firstName} ${lastName}`
+}
+
+/**
+ * Generate random email
+ */
+function generateRandomEmail(name) {
+  const domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'company.com', 'business.io', 'enterprise.com']
+  const domain = domains[Math.floor(Math.random() * domains.length)]
+  const namePart = name.toLowerCase().replace(/\s+/g, '.')
+  const randomNum = Math.floor(Math.random() * 1000)
+  return `${namePart}${randomNum}@${domain}`
 }
 
 const seed = async () => {
@@ -74,65 +155,68 @@ const seed = async () => {
     // STEP 3: CREATE ADMIN USER
     // ============================================
     console.log('\n👤 Creating admin user...')
-    // Hash password with SHA-256 (same as frontend does)
     const plainPassword = 'password123'
     const sha256HashedPassword = hashPasswordSHA256(plainPassword)
     
-    // The AdminUser model will hash this SHA-256 hash with bcrypt for storage
     const adminUser = await AdminUser.create({
       organizationId: organization._id,
       name: 'Admin User',
       email: 'admin@mindmetrics.com',
-      password: sha256HashedPassword, // SHA-256 hashed (will be bcrypt hashed by model)
+      password: sha256HashedPassword,
       role: 'Owner',
     })
     console.log('✅ Created admin user')
     console.log(`   📧 Email: ${adminUser.email}`)
     console.log(`   🔑 Password: ${plainPassword}`)
-    console.log(`   ⚠️  Note: Use this password to login (frontend will hash it with SHA-256)`)
 
     // ============================================
-    // STEP 4: CREATE CUSTOMERS
+    // STEP 4: CREATE 500 CUSTOMERS
     // ============================================
-    console.log('\n👥 Creating customers...')
-    const customerData = [
-      { name: 'John Smith', email: 'john.smith@example.com', region: 'North America', status: 'active' },
-      { name: 'Sarah Johnson', email: 'sarah.j@example.com', region: 'Europe', status: 'active' },
-      { name: 'Michael Chen', email: 'michael.chen@example.com', region: 'Asia Pacific', status: 'active' },
-      { name: 'Emily Davis', email: 'emily.davis@example.com', region: 'North America', status: 'active' },
-      { name: 'David Wilson', email: 'david.wilson@example.com', region: 'Europe', status: 'active' },
-      { name: 'Lisa Anderson', email: 'lisa.anderson@example.com', region: 'North America', status: 'active' },
-      { name: 'Robert Brown', email: 'robert.brown@example.com', region: 'Asia Pacific', status: 'active' },
-      { name: 'Jennifer Taylor', email: 'jennifer.taylor@example.com', region: 'Europe', status: 'active' },
-      { name: 'James Martinez', email: 'james.martinez@example.com', region: 'North America', status: 'active' },
-      { name: 'Maria Garcia', email: 'maria.garcia@example.com', region: 'Europe', status: 'active' },
-      { name: 'William Lee', email: 'william.lee@example.com', region: 'Asia Pacific', status: 'active' },
-      { name: 'Patricia White', email: 'patricia.white@example.com', region: 'North America', status: 'active' },
-      { name: 'Richard Harris', email: 'richard.harris@example.com', region: 'Europe', status: 'inactive' },
-      { name: 'Susan Clark', email: 'susan.clark@example.com', region: 'North America', status: 'active' },
-      { name: 'Thomas Lewis', email: 'thomas.lewis@example.com', region: 'Asia Pacific', status: 'churned' },
-    ]
-
-    const customers = []
+    console.log('\n👥 Creating 500 customers...')
     const now = new Date()
     const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)
+    const regions = ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East', 'Africa']
+    const statuses = ['active', 'active', 'active', 'active', 'inactive', 'churned'] // 66% active, 16% inactive, 16% churned
 
-    for (const data of customerData) {
-      const signupDate = randomDate(sixMonthsAgo, now)
-      const lastActiveAt = data.status === 'churned' 
-        ? randomDate(signupDate, new Date(signupDate.getTime() + 90 * 24 * 60 * 60 * 1000))
-        : randomDate(signupDate, now)
+    const customers = []
+    const BATCH_SIZE = 100 // Insert in batches for better performance
 
-      const customer = await Customer.create({
-        organizationId: organization._id,
-        name: data.name,
-        email: data.email,
-        status: data.status,
-        region: data.region,
-        signupDate,
-        lastActiveAt,
-      })
-      customers.push(customer)
+    for (let batch = 0; batch < 5; batch++) {
+      const customerBatch = []
+      for (let i = 0; i < BATCH_SIZE; i++) {
+        const name = generateRandomName()
+        const email = generateRandomEmail(name)
+        const region = regions[Math.floor(Math.random() * regions.length)]
+        const status = statuses[Math.floor(Math.random() * statuses.length)]
+        const signupDate = randomDate(sixMonthsAgo, now)
+        
+        let lastActiveAt
+        if (status === 'churned') {
+          // Churned customers stopped being active 1-3 months after signup
+          const churnDate = new Date(signupDate.getTime() + (30 + Math.random() * 60) * 24 * 60 * 60 * 1000)
+          lastActiveAt = churnDate > now ? now : churnDate
+        } else if (status === 'inactive') {
+          // Inactive customers last active 2-4 months ago
+          const inactiveDate = new Date(now.getTime() - (60 + Math.random() * 60) * 24 * 60 * 60 * 1000)
+          lastActiveAt = inactiveDate < signupDate ? signupDate : inactiveDate
+        } else {
+          // Active customers active within last 30 days
+          lastActiveAt = randomDate(new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), now)
+        }
+
+        customerBatch.push({
+          organizationId: organization._id,
+          name,
+          email,
+          status,
+          region,
+          signupDate,
+          lastActiveAt,
+        })
+      }
+      const created = await Customer.insertMany(customerBatch)
+      customers.push(...created)
+      console.log(`   ✅ Created batch ${batch + 1}/5 (${customers.length} total customers)`)
     }
     console.log(`✅ Created ${customers.length} customers`)
 
@@ -152,30 +236,45 @@ const seed = async () => {
       let plan, price, status, startDate, endDate
 
       if (customer.status === 'churned') {
-        // Churned customers have cancelled subscriptions
-        plan = Math.random() > 0.5 ? 'Basic' : 'Pro'
+        // Churned: 60% Basic, 40% Pro
+        plan = Math.random() > 0.4 ? 'Basic' : 'Pro'
         price = planDetails[plan].price
         status = 'cancelled'
         startDate = customer.signupDate
         endDate = customer.lastActiveAt
       } else if (customer.status === 'inactive') {
-        // Inactive customers might be on trial or free plan
-        plan = Math.random() > 0.5 ? 'Free' : 'Basic'
+        // Inactive: 40% Free, 40% Basic (trial), 20% Pro (trial)
+        const rand = Math.random()
+        if (rand < 0.4) {
+          plan = 'Free'
+          status = 'active'
+        } else if (rand < 0.8) {
+          plan = 'Basic'
+          status = 'trial'
+        } else {
+          plan = 'Pro'
+          status = 'trial'
+        }
         price = planDetails[plan].price
-        status = plan === 'Free' ? 'active' : 'trial'
         startDate = customer.signupDate
         endDate = null
       } else {
-        // Active customers have active subscriptions
-        const plans = ['Basic', 'Pro']
-        plan = plans[Math.floor(Math.random() * plans.length)]
+        // Active: 20% Free, 40% Basic, 40% Pro
+        const rand = Math.random()
+        if (rand < 0.2) {
+          plan = 'Free'
+        } else if (rand < 0.6) {
+          plan = 'Basic'
+        } else {
+          plan = 'Pro'
+        }
         price = planDetails[plan].price
         status = 'active'
         startDate = customer.signupDate
         endDate = null
       }
 
-      const subscription = await Subscription.create({
+      subscriptions.push({
         organizationId: organization._id,
         customerId: customer._id,
         plan,
@@ -184,38 +283,66 @@ const seed = async () => {
         startDate,
         endDate,
       })
-      subscriptions.push(subscription)
     }
-    console.log(`✅ Created ${subscriptions.length} subscriptions`)
+
+    // Insert subscriptions in batches
+    const subscriptionBatches = []
+    for (let i = 0; i < subscriptions.length; i += BATCH_SIZE) {
+      subscriptionBatches.push(subscriptions.slice(i, i + BATCH_SIZE))
+    }
+
+    const createdSubscriptions = []
+    for (let i = 0; i < subscriptionBatches.length; i++) {
+      const batch = await Subscription.insertMany(subscriptionBatches[i])
+      createdSubscriptions.push(...batch)
+      console.log(`   ✅ Created subscription batch ${i + 1}/${subscriptionBatches.length}`)
+    }
+    console.log(`✅ Created ${createdSubscriptions.length} subscriptions`)
 
     // ============================================
     // STEP 6: CREATE TRANSACTIONS
     // ============================================
     console.log('\n💰 Creating transactions...')
     const transactions = []
-    const currencies = ['USD', 'EUR', 'INR']
+    let transactionCount = 0
 
-    for (let i = 0; i < subscriptions.length; i++) {
-      const subscription = subscriptions[i]
+    for (let i = 0; i < createdSubscriptions.length; i++) {
+      const subscription = createdSubscriptions[i]
       const customer = customers[i]
 
-      // Only create transactions for paid plans
-      if (subscription.pricePerMonth > 0 && subscription.status !== 'cancelled') {
-        // Create multiple transactions (monthly payments)
+      // Only create transactions for paid plans (Basic and Pro)
+      if (subscription.pricePerMonth > 0) {
+        // Calculate months since subscription started
         const monthsSinceStart = Math.floor(
           (now.getTime() - subscription.startDate.getTime()) / (30 * 24 * 60 * 60 * 1000)
         )
-        const transactionCount = Math.min(Math.max(monthsSinceStart, 1), 6) // 1-6 transactions
+        
+        // Create monthly transactions up to subscription end or now
+        const maxMonths = subscription.endDate 
+          ? Math.floor((subscription.endDate.getTime() - subscription.startDate.getTime()) / (30 * 24 * 60 * 60 * 1000))
+          : Math.min(monthsSinceStart, 6) // Max 6 months for active subscriptions
+        
+        const transactionCountForSub = Math.max(1, maxMonths)
 
-        for (let j = 0; j < transactionCount; j++) {
+        for (let j = 0; j < transactionCountForSub; j++) {
           const transactionDate = new Date(subscription.startDate)
           transactionDate.setMonth(transactionDate.getMonth() + j)
+          
+          // Don't create future transactions
+          if (transactionDate > now) break
 
-          // Some transactions might fail
-          const status = Math.random() > 0.1 ? 'success' : 'failed'
-          const currency = customer.region === 'Europe' ? 'EUR' : customer.region === 'Asia Pacific' ? 'INR' : 'USD'
+          // 5% of transactions fail
+          const status = Math.random() > 0.05 ? 'success' : 'failed'
+          
+          // Currency based on region
+          let currency = 'USD'
+          if (customer.region === 'Europe') currency = 'EUR'
+          else if (customer.region === 'Asia Pacific') currency = 'INR'
+          else if (customer.region === 'Latin America') currency = 'USD'
+          else if (customer.region === 'Middle East') currency = 'USD'
+          else if (customer.region === 'Africa') currency = 'USD'
 
-          const transaction = await Transaction.create({
+          transactions.push({
             organizationId: organization._id,
             customerId: customer._id,
             subscriptionId: subscription._id,
@@ -224,25 +351,40 @@ const seed = async () => {
             status,
             createdAt: transactionDate,
           })
-          transactions.push(transaction)
+          transactionCount++
+
+          // Insert in batches of 1000
+          if (transactions.length >= 1000) {
+            await Transaction.insertMany(transactions)
+            console.log(`   ✅ Created ${transactionCount} transactions...`)
+            transactions.length = 0 // Clear array
+          }
         }
       }
     }
-    console.log(`✅ Created ${transactions.length} transactions`)
+
+    // Insert remaining transactions
+    if (transactions.length > 0) {
+      await Transaction.insertMany(transactions)
+    }
+    console.log(`✅ Created ${transactionCount} transactions`)
 
     // ============================================
     // STEP 7: CREATE USAGE EVENTS
     // ============================================
     console.log('\n📊 Creating usage events...')
-    const usageEvents = []
     const eventTypes = ['login', 'session', 'feature_used']
     const features = ['dashboard', 'analytics', 'reports', 'settings', 'export', 'api']
+    let usageEventCount = 0
+    const usageEvents = []
 
     for (const customer of customers) {
-      if (customer.status === 'churned') continue // Skip churned customers
+      if (customer.status === 'churned') continue
 
-      // Generate 5-15 usage events per active customer
-      const eventCount = Math.floor(Math.random() * 11) + 5
+      // Active customers: 20-50 events, Inactive: 5-15 events
+      const eventCount = customer.status === 'active' 
+        ? Math.floor(Math.random() * 31) + 20
+        : Math.floor(Math.random() * 11) + 5
 
       for (let i = 0; i < eventCount; i++) {
         const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)]
@@ -261,31 +403,42 @@ const seed = async () => {
           eventData.feature = features[Math.floor(Math.random() * features.length)]
         }
 
-        const event = await UsageEvent.create(eventData)
-        usageEvents.push(event)
+        usageEvents.push(eventData)
+        usageEventCount++
+
+        // Insert in batches of 1000
+        if (usageEvents.length >= 1000) {
+          await UsageEvent.insertMany(usageEvents)
+          console.log(`   ✅ Created ${usageEventCount} usage events...`)
+          usageEvents.length = 0
+        }
       }
     }
-    console.log(`✅ Created ${usageEvents.length} usage events`)
+
+    // Insert remaining usage events
+    if (usageEvents.length > 0) {
+      await UsageEvent.insertMany(usageEvents)
+    }
+    console.log(`✅ Created ${usageEventCount} usage events`)
 
     // ============================================
     // SUMMARY
     // ============================================
-    console.log('\n' + '='.repeat(50))
+    console.log('\n' + '='.repeat(60))
     console.log('✅ DATABASE SEEDED SUCCESSFULLY!')
-    console.log('='.repeat(50))
+    console.log('='.repeat(60))
     console.log(`\n📊 Summary:`)
     console.log(`   🏢 Organizations: 1`)
     console.log(`   👤 Admin Users: 1`)
     console.log(`   👥 Customers: ${customers.length}`)
-    console.log(`   💳 Subscriptions: ${subscriptions.length}`)
-    console.log(`   💰 Transactions: ${transactions.length}`)
-    console.log(`   📊 Usage Events: ${usageEvents.length}`)
+    console.log(`   💳 Subscriptions: ${createdSubscriptions.length}`)
+    console.log(`   💰 Transactions: ${transactionCount}`)
+    console.log(`   📊 Usage Events: ${usageEventCount}`)
+    console.log(`\n📅 Data Range: Last 6 months`)
     console.log(`\n🔐 Login Credentials:`)
     console.log(`   📧 Email: admin@mindmetrics.com`)
     console.log(`   🔑 Password: password123`)
-    console.log(`\n⚠️  Note: The password will be hashed with SHA-256 by the frontend`)
-    console.log(`   before being sent to the backend for authentication.`)
-    console.log('\n' + '='.repeat(50))
+    console.log('\n' + '='.repeat(60))
 
     process.exit(0)
   } catch (error) {

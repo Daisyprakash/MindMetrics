@@ -9,8 +9,11 @@ import { subDays } from 'date-fns'
 export default function Dashboard() {
   const [selectedMetric, setSelectedMetric] = useState<'users' | 'revenue' | 'sessions'>('users')
   const dateRange = useMemo(() => {
-    const to = new Date()
-    const from = subDays(to, 30)
+    // Use day boundaries in UTC for consistency with Analytics page and backend
+    const now = new Date()
+    const to = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999))
+    const fromDate = subDays(to, 30)
+    const from = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate(), 0, 0, 0, 0))
     return {
       from: from.toISOString(),
       to: to.toISOString(),

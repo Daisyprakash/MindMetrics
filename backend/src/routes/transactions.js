@@ -54,10 +54,10 @@ router.get('/', async (req, res) => {
     res.json({
       success: true,
       data: {
-        items,
+        data: items, // Frontend expects 'data' array
         total,
         page: parseInt(page),
-        limit: parseInt(limit),
+        pageSize: parseInt(limit), // Frontend expects 'pageSize'
         totalPages: Math.ceil(total / parseInt(limit)),
       },
     })

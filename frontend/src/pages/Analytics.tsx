@@ -7,20 +7,43 @@ import TrendChart from '@/components/charts/TrendChart'
 import RetentionChart from '@/components/charts/RetentionChart'
 
 export default function Analytics() {
-  const [dateRange, setDateRange] = useState({
-    from: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
-    to: format(new Date(), 'yyyy-MM-dd'),
-  })
+  // Use same date calculation as Dashboard for consistency
+  const initialDateRange = useMemo(() => {
+    const to = new Date()
+    const from = subDays(to, 30)
+    return {
+      from: format(from, 'yyyy-MM-dd'),
+      to: format(to, 'yyyy-MM-dd'),
+    }
+  }, [])
+
+  const [dateRange, setDateRange] = useState(initialDateRange)
 
   const [selectedMetric, setSelectedMetric] = useState<'users' | 'revenue' | 'sessions'>('users')
 
+  // Convert date strings to ISO strings using UTC to match Dashboard and backend
+  // This ensures both pages use identical date ranges
+  const fromISO = useMemo(() => {
+    // Parse date string and set to start of day in UTC
+    // Format: 'yyyy-MM-dd' -> 'yyyy-MM-ddT00:00:00.000Z'
+    const date = new Date(dateRange.from + 'T00:00:00.000Z')
+    return date.toISOString()
+  }, [dateRange.from])
+
+  const toISO = useMemo(() => {
+    // Parse date string and set to end of day in UTC
+    // Format: 'yyyy-MM-dd' -> 'yyyy-MM-ddT23:59:59.999Z'
+    const date = new Date(dateRange.to + 'T23:59:59.999Z')
+    return date.toISOString()
+  }, [dateRange.to])
+
   const { data: trendsData, isLoading: trendsLoading } = useQuery({
-    queryKey: ['analytics', 'trends', selectedMetric, dateRange],
+    queryKey: ['analytics', 'trends', selectedMetric, dateRange.from, dateRange.to],
     queryFn: () =>
       analyticsApi.getTrends(
         selectedMetric,
-        new Date(dateRange.from).toISOString(),
-        new Date(dateRange.to).toISOString(),
+        fromISO,
+        toISO,
         'day'
       ),
   })
