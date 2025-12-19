@@ -36,18 +36,16 @@ export default function Dashboard() {
       return {
         totalUsers: 0,
         activeUsers: 0,
-        monthlyRevenue: 0,
-        conversionRate: 0,
         mrr: 0,
+        conversionRate: 0,
       }
     }
 
     return {
       totalUsers: overviewData.totalUsers,
       activeUsers: overviewData.activeUsers,
-      monthlyRevenue: overviewData.monthlyRevenue,
+      mrr: overviewData.mrr, // Use MRR instead of monthlyRevenue for consistency
       conversionRate: overviewData.conversionRate * 100, // Convert to percentage
-      mrr: overviewData.mrr,
     }
   }, [overviewData])
 
@@ -86,8 +84,8 @@ export default function Dashboard() {
           loading={isLoading}
         />
         <KPICard
-          title="Monthly Revenue"
-          value={`$${kpis.monthlyRevenue.toLocaleString()}`}
+          title="Monthly Recurring Revenue (MRR)"
+          value={`$${kpis.mrr.toLocaleString()}`}
           icon={<DollarSign className="w-8 h-8" />}
           loading={isLoading}
         />
