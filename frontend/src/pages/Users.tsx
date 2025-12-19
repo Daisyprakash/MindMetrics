@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Plus, Edit } from 'lucide-react'
+import { Search, Plus, Edit, Users as UsersIcon } from 'lucide-react'
 import { customerApi } from '@/api/api'
 import DataTable, { type Column } from '@/components/DataTable'
 import UserDetailDrawer from '@/components/UserDetailDrawer'
@@ -99,7 +99,7 @@ export default function Users() {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => handleEditUser(user)}
-            className="flex items-center space-x-1 text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm font-medium"
+            className="flex items-center space-x-1.5 px-3 py-1.5 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg text-sm font-medium transition-all"
             title="Edit user"
           >
             <Edit className="w-4 h-4" />
@@ -107,7 +107,7 @@ export default function Users() {
           </button>
           <button
             onClick={() => setSelectedUserId((user as any)._id || (user as any).id)}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 text-sm font-medium"
+            className="px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm font-medium transition-all"
             title="View details"
           >
             View
@@ -137,25 +137,28 @@ export default function Users() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Users</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent flex items-center space-x-3">
+            <UsersIcon className="w-8 h-8 text-primary-600" />
+            <span>Users</span>
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and view your customer base</p>
         </div>
         <button
           onClick={handleAddUser}
-          className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg shadow-primary-500/30 hover:shadow-xl hover:scale-105 font-medium"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           <span>Add User</span>
         </button>
       </div>
 
       {/* Search */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 transition-colors">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 transition-all hover:shadow-xl">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -164,7 +167,7 @@ export default function Users() {
               setSearch(e.target.value)
               setPage(1) // Reset to first page on search
             }}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
           />
         </div>
       </div>
@@ -172,7 +175,10 @@ export default function Users() {
       {/* Table */}
       <DataTable
         columns={columns}
-        data={data?.items || []}
+        data={(data?.data || []).map((user: any) => ({
+          ...user,
+          id: user.id || user._id, // Ensure id field exists
+        }))}
         loading={isLoading}
         onSort={handleSort}
         sortKey={sortBy}
@@ -181,23 +187,24 @@ export default function Users() {
 
       {/* Pagination */}
       {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow p-4 transition-colors">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {(data.page - 1) * data.limit + 1} to{' '}
-            {Math.min(data.page * data.limit, data.total)} of {data.total} users
+        <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 transition-all">
+          <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+            Showing <span className="font-bold text-gray-900 dark:text-white">{(data.page - 1) * data.pageSize + 1}</span> to{' '}
+            <span className="font-bold text-gray-900 dark:text-white">{Math.min(data.page * data.pageSize, data.total)}</span> of{' '}
+            <span className="font-bold text-gray-900 dark:text-white">{data.total}</span> users
           </div>
           <div className="flex space-x-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
             >
               Previous
             </button>
             <button
               onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
               disabled={page === data.totalPages}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
             >
               Next
             </button>

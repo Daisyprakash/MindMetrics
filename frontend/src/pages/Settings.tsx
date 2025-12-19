@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Save, Loader2, Sparkles } from 'lucide-react'
+import { Save, Loader2, Sparkles, Settings as SettingsIcon, Building2, Globe, DollarSign } from 'lucide-react'
 import { settingsApi } from '@/api/api'
 import type { Account, Industry, Currency, AccountPlan } from '@/types'
 
@@ -109,28 +109,34 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent flex items-center space-x-3">
+          <SettingsIcon className="w-8 h-8 text-primary-600" />
+          <span>Settings</span>
+        </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your account preferences</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Generate Random Button */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 transition-colors">
+        <div className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-xl shadow-lg border border-primary-200 dark:border-primary-800 p-4 transition-all hover:shadow-xl">
           <button
             type="button"
             onClick={handleGenerateRandom}
-            className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-primary-700 dark:text-primary-300 bg-white dark:bg-gray-800 border-2 border-primary-300 dark:border-primary-700 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all hover:scale-105"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-5 h-5" />
             <span>Generate Random Account Data</span>
           </button>
         </div>
 
         {/* Profile Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Profile</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 transition-all hover:shadow-xl">
+          <div className="flex items-center space-x-2 mb-6">
+            <Building2 className="w-5 h-5 text-primary-600" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Organization Profile</h2>
+          </div>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -140,7 +146,7 @@ export default function Settings() {
                 type="text"
                 value={currentData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                 required
               />
             </div>
@@ -151,7 +157,7 @@ export default function Settings() {
               <select
                 value={currentData.industry}
                 onChange={(e) => handleChange('industry', e.target.value as Industry)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
               >
                 <option value="SaaS">SaaS</option>
                 <option value="Ecommerce">Ecommerce</option>
@@ -162,20 +168,26 @@ export default function Settings() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Timezone
               </label>
-              <input
-                type="text"
-                value={currentData.timezone}
-                onChange={(e) => handleChange('timezone', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="America/New_York"
-              />
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={currentData.timezone}
+                  onChange={(e) => handleChange('timezone', e.target.value)}
+                  className="w-full pl-11 pr-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                  placeholder="America/New_York"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Preferences Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Preferences</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 transition-all hover:shadow-xl">
+          <div className="flex items-center space-x-2 mb-6">
+            <DollarSign className="w-5 h-5 text-primary-600" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Preferences</h2>
+          </div>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -184,7 +196,7 @@ export default function Settings() {
               <select
                 value={currentData.currency}
                 onChange={(e) => handleChange('currency', e.target.value as Currency)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
               >
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
@@ -198,7 +210,7 @@ export default function Settings() {
               <select
                 value={currentData.plan}
                 onChange={(e) => handleChange('plan', e.target.value as AccountPlan)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
               >
                 <option value="Starter">Starter</option>
                 <option value="Pro">Pro</option>
@@ -213,16 +225,16 @@ export default function Settings() {
           <button
             type="submit"
             disabled={!isDirty || updateMutation.isPending}
-            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            className="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg shadow-primary-500/30 hover:shadow-xl transition-all hover:scale-105 font-medium"
           >
             {updateMutation.isPending ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
                 <span>Saving...</span>
               </>
             ) : (
               <>
-                <Save className="w-4 h-4" />
+                <Save className="w-5 h-5" />
                 <span>Save Changes</span>
               </>
             )}

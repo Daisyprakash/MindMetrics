@@ -26,7 +26,7 @@ export interface Account {
 // ============================================================================
 
 export type UserRole = 'Admin' | 'Member' | 'Viewer'
-export type UserStatus = 'active' | 'inactive' | 'suspended'
+export type UserStatus = 'active' | 'inactive' | 'churned' // Match backend enum: ['active', 'inactive', 'churned']
 
 export interface User {
   id: string

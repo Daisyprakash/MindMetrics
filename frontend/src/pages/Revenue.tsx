@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react'
+import { DollarSign, TrendingUp, TrendingDown, BarChart3, FileText } from 'lucide-react'
 import { subscriptionApi, transactionApi } from '@/api/api'
 import KPICard from '@/components/KPICard'
 import DataTable, { type Column } from '@/components/DataTable'
@@ -60,8 +60,8 @@ export default function Revenue() {
   }, [subscriptions])
 
   const transformedTransactions = useMemo(() => {
-    if (!transactionsData?.items) return []
-    return transactionsData.items.map((t: any) => ({
+    if (!transactionsData?.data) return []
+    return transactionsData.data.map((t: any) => ({
       ...t,
       id: t._id || t.id,
       userId: t.customerId?._id || t.customerId || t.userId,
@@ -127,9 +127,12 @@ export default function Revenue() {
   const isLoading = subscriptionsLoading || transactionsLoading
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Revenue</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent flex items-center space-x-3">
+          <DollarSign className="w-8 h-8 text-primary-600" />
+          <span>Revenue</span>
+        </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">Track your revenue metrics and transactions</p>
       </div>
 
@@ -138,26 +141,32 @@ export default function Revenue() {
         <KPICard
           title="Monthly Recurring Revenue (MRR)"
           value={`$${revenueMetrics.mrr.toLocaleString()}`}
-          icon={<DollarSign className="w-8 h-8" />}
+          icon={<DollarSign className="w-6 h-6" />}
           loading={isLoading}
+          gradient="purple"
         />
         <KPICard
           title="Annual Recurring Revenue (ARR)"
           value={`$${revenueMetrics.arr.toLocaleString()}`}
-          icon={<TrendingUp className="w-8 h-8" />}
+          icon={<TrendingUp className="w-6 h-6" />}
           loading={isLoading}
+          gradient="green"
         />
         <KPICard
           title="Churn Rate"
           value={`${revenueMetrics.churnRate.toFixed(1)}%`}
-          icon={<TrendingDown className="w-8 h-8" />}
+          icon={<TrendingDown className="w-6 h-6" />}
           loading={isLoading}
+          gradient="orange"
         />
       </div>
 
       {/* Revenue by Plan Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue by Plan</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 transition-all hover:shadow-xl">
+        <div className="flex items-center space-x-2 mb-6">
+          <BarChart3 className="w-5 h-5 text-primary-600" />
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Revenue by Plan</h3>
+        </div>
         {isLoading ? (
           <div className="animate-pulse h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
         ) : (
@@ -195,7 +204,10 @@ export default function Revenue() {
 
       {/* Transactions Table */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Transactions</h2>
+        <div className="flex items-center space-x-2 mb-4">
+          <FileText className="w-5 h-5 text-primary-600" />
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Transactions</h2>
+        </div>
         <DataTable
           columns={transactionColumns}
           data={transformedTransactions.slice(0, 20)}

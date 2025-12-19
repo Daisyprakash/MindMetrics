@@ -75,8 +75,11 @@ router.get('/', async (req, res) => {
       const sub = subscriptions.find(
         (s) => s.customerId.toString() === customer._id.toString()
       )
+      const customerObj = customer.toObject()
       return {
-        ...customer.toObject(),
+        ...customerObj,
+        id: customerObj._id.toString(), // Add 'id' field for frontend compatibility
+        _id: customerObj._id.toString(), // Keep _id as string for consistency
         plan: sub ? sub.plan : 'Free',
       }
     })
@@ -84,10 +87,10 @@ router.get('/', async (req, res) => {
     res.json({
       success: true,
       data: {
-        items: itemsWithPlan,
+        data: itemsWithPlan, // Use 'data' instead of 'items' to match PaginatedResponse interface
         total,
         page: parseInt(page),
-        limit: parseInt(limit),
+        pageSize: parseInt(limit), // Use 'pageSize' instead of 'limit' to match PaginatedResponse interface
         totalPages: Math.ceil(total / parseInt(limit)),
       },
     })

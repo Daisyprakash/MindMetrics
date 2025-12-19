@@ -43,7 +43,7 @@ export const generateRandomUserData = () => {
     name: `${firstName} ${lastName}`,
     email,
     role: randomChoice<UserRole>(['Admin', 'Member', 'Viewer']),
-    status: randomChoice<UserStatus>(['active', 'active', 'active', 'inactive', 'suspended']), // Bias toward active
+    status: randomChoice<UserStatus>(['active', 'active', 'active', 'inactive', 'churned']), // Bias toward active, use 'churned' instead of 'suspended'
     region: randomChoice(regions),
   }
 }

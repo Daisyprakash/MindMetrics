@@ -63,18 +63,18 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 p-8 transition-all hover:shadow-3xl">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full mb-4">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl mb-4 shadow-lg shadow-primary-500/30">
               {isRegister ? (
-                <UserPlus className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                <UserPlus className="w-10 h-10 text-white" />
               ) : (
-                <LogIn className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                <LogIn className="w-10 h-10 text-white" />
               )}
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
               {isRegister ? 'Create Account' : 'Welcome Back'}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
@@ -101,7 +101,7 @@ export default function Login() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                     placeholder="Enter your name"
                     required
                     disabled={isLoading}
@@ -175,7 +175,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+              className="w-full px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:scale-[1.02]"
             >
               {isLoading
                 ? isRegister
@@ -194,7 +194,7 @@ export default function Login() {
                 setIsRegister(!isRegister)
                 setError('')
               }}
-              className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+              className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
             >
               {isRegister
                 ? 'Already have an account? Sign in'

@@ -142,19 +142,24 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto transition-colors">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 w-full max-w-md max-h-[90vh] overflow-y-auto transition-all">
           <div className="p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {isEditMode ? 'Edit User' : 'Add New User'}
-              </h2>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                  {isEditMode ? 'Edit User' : 'Add New User'}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {isEditMode ? 'Update customer information' : 'Create a new customer account'}
+                </p>
+              </div>
               <button
                 onClick={onClose}
-                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all"
                 disabled={isLoading}
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -183,10 +188,10 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                  className={`w-full px-4 py-2.5 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all ${
                     errors.name
-                      ? 'border-red-500 dark:border-red-400'
-                      : 'border-gray-300 dark:border-gray-600'
+                      ? 'border-red-500 dark:border-red-400 focus:border-red-500'
+                      : 'border-gray-200 dark:border-gray-600 focus:border-primary-500'
                   } dark:bg-gray-700 dark:text-white`}
                   disabled={isLoading}
                   required
@@ -205,10 +210,10 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                  className={`w-full px-4 py-2.5 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all ${
                     errors.email
-                      ? 'border-red-500 dark:border-red-400'
-                      : 'border-gray-300 dark:border-gray-600'
+                      ? 'border-red-500 dark:border-red-400 focus:border-red-500'
+                      : 'border-gray-200 dark:border-gray-600 focus:border-primary-500'
                   } dark:bg-gray-700 dark:text-white`}
                   disabled={isLoading}
                   required
@@ -226,7 +231,7 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                 <select
                   value={formData.status}
                   onChange={(e) => handleChange('status', e.target.value as UserStatus)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                   disabled={isLoading}
                 >
                   <option value="active">Active</option>
@@ -249,7 +254,7 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                         const prices: Record<string, number> = { Free: 0, Basic: 29, Pro: 99 }
                         setFormData(prev => ({ ...prev, plan, pricePerMonth: prices[plan] }))
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       disabled={isLoading}
                     >
                       <option value="Free">Free ($0)</option>
@@ -266,7 +271,7 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                       type="number"
                       value={formData.pricePerMonth}
                       onChange={(e) => handleChange('pricePerMonth', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       disabled={isLoading}
                       min="0"
                     />
@@ -282,7 +287,7 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                 <select
                   value={formData.region}
                   onChange={(e) => handleChange('region', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                   disabled={isLoading}
                 >
                   {regions.map((region) => (
@@ -317,7 +322,7 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary-500/30 hover:shadow-xl hover:scale-105"
                 >
                   {isLoading
                     ? isEditMode
