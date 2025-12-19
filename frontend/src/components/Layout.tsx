@@ -11,7 +11,6 @@ import {
   Users,
   DollarSign,
   FileText,
-  Settings,
   Building2,
 } from 'lucide-react'
 import { settingsApi } from '@/api/api'
@@ -28,7 +27,7 @@ const navigation = [
   { name: 'Users', path: '/users', icon: Users },
   { name: 'Revenue', path: '/revenue', icon: DollarSign },
   { name: 'Reports', path: '/reports', icon: FileText },
-  { name: 'Settings', path: '/settings', icon: Settings },
+  { name: 'Profile', path: '/profile', icon: User },
 ]
 
 export default function Layout({ children }: LayoutProps) {

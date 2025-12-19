@@ -25,6 +25,26 @@ const organizationSchema = new mongoose.Schema(
       enum: ['USD', 'EUR', 'INR'],
       default: 'USD',
     },
+    website: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    address: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    description: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   {
     timestamps: true,
