@@ -83,7 +83,7 @@ export default function Login() {
               Welcome Back
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Sign in to your SaaS Analytics Dashboard
+              Sign in to your MindMetrics Dashboard
             </p>
           </div>
 

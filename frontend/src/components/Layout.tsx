@@ -86,7 +86,7 @@ export default function Layout({ children }: LayoutProps) {
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent dark:from-primary-400 dark:to-primary-600">
-                  SaaS Analytics
+                  MindMetrics
                 </h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Business Intelligence</p>
               </div>

@@ -128,7 +128,7 @@ export default function Register() {
               Create Your Account
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Set up your SaaS Analytics Dashboard and start tracking your business
+              Set up your MindMetrics Dashboard and start tracking your business
             </p>
           </div>
 
