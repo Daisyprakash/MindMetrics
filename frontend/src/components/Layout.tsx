@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Moon,
   Sun,
@@ -33,6 +33,7 @@ const navigation = [
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { theme, toggleTheme } = useTheme()
   const { user, logout } = useAuth()
   const { data: organization } = useQuery({
@@ -42,8 +43,35 @@ export default function Layout({ children }: LayoutProps) {
   })
 
   const handleLogout = () => {
+    // Preserve theme preference before clearing
+    const themePreference = localStorage.getItem('theme')
+    
+    // Clear all React Query cache first
+    queryClient.clear()
+    // Remove all queries
+    queryClient.removeQueries()
+    // Clear all localStorage items
+    localStorage.clear()
+    
+    // Restore theme preference (user preference, not auth-related)
+    if (themePreference) {
+      localStorage.setItem('theme', themePreference)
+    }
+    
+    // Clear all cookies
+    document.cookie.split(';').forEach((c) => {
+      const eqPos = c.indexOf('=')
+      const name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim()
+      // Clear cookie for all paths and domains
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=${window.location.hostname};`
+    })
+    // Clear sessionStorage as well
+    sessionStorage.clear()
+    // Call logout to clear auth state
     logout()
-    navigate('/login')
+    // Navigate to login
+    navigate('/login', { replace: true })
   }
 
   return (

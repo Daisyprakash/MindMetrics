@@ -22,6 +22,9 @@ export default function Profile() {
   const { data: organization, isLoading } = useQuery({
     queryKey: ['organization'],
     queryFn: () => settingsApi.getOrganization(),
+    enabled: !!user, // Only fetch if user is logged in
+    staleTime: 0, // Always consider data stale to refetch on login
+    gcTime: 0, // Don't cache when component unmounts (gcTime replaces cacheTime in React Query v5)
   })
 
   const [formData, setFormData] = useState({
@@ -37,16 +40,17 @@ export default function Profile() {
   })
 
   useEffect(() => {
-    if (organization) {
+    if (organization && typeof organization === 'object' && 'name' in organization) {
+      const org = organization as any
       setFormData({
-        name: organization.name || '',
-        industry: (organization.industry as Industry) || 'SaaS',
-        timezone: organization.timezone || 'America/New_York',
-        currency: (organization.currency as Currency) || 'USD',
-        website: (organization as any).website || '',
-        address: (organization as any).address || '',
-        phone: (organization as any).phone || '',
-        description: (organization as any).description || '',
+        name: org.name || '',
+        industry: (org.industry as Industry) || 'SaaS',
+        timezone: org.timezone || 'America/New_York',
+        currency: (org.currency as Currency) || 'USD',
+        website: org.website || '',
+        address: org.address || '',
+        phone: org.phone || '',
+        description: org.description || '',
       })
     }
   }, [organization])

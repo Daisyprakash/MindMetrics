@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.login(email, password)
       localStorage.setItem('authToken', response.token)
       setUser(response.user as AdminUser)
+      // Return a flag to indicate cache should be cleared
       return true
     } catch (error) {
       console.error('Login error:', error)
@@ -81,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.register(data)
       localStorage.setItem('authToken', response.token)
       setUser(response.user as AdminUser)
+      // Return a flag to indicate cache should be cleared
       return true
     } catch (error) {
       console.error('Registration error:', error)
@@ -90,7 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('authToken')
+    // Clear all localStorage items
+    localStorage.clear()
+    // Note: React Query cache will be cleared by the component that calls logout
   }
 
   return (
