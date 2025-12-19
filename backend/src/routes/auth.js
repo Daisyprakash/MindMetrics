@@ -95,7 +95,10 @@ router.post('/login', async (req, res) => {
       })
     }
 
+    // password from client is already SHA-256 hashed
+    // comparePassword will handle the comparison with stored bcrypt hash
     const isPasswordValid = await user.comparePassword(password)
+    
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,

@@ -18,3 +18,7 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Development scripts (not part of production)
+backend/src/scripts/
+frontend/scripts/
+

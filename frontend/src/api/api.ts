@@ -10,7 +10,6 @@ import type {
   Transaction,
   Report,
   Account,
-  AnalyticsFilters,
   PaginatedResponse,
 } from '@/types'
 
@@ -27,9 +26,9 @@ const apiRequest = async <T>(
   options: RequestInit = {}
 ): Promise<T> => {
   const token = getAuthToken()
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string> || {}),
   }
 
   if (token) {
@@ -52,9 +51,12 @@ const apiRequest = async <T>(
 
 // ==================== AUTH APIs ====================
 
+import { hashPassword } from '@/utils/crypto'
+
 export const authApi = {
   /**
    * Register first admin user and create organization
+   * Password is hashed client-side before sending for security
    */
   register: async (data: {
     name: string
@@ -63,6 +65,9 @@ export const authApi = {
     organizationName: string
     industry?: string
   }) => {
+    // Hash password client-side before sending
+    const hashedPassword = await hashPassword(data.password)
+    
     const response = await apiRequest<{
       token: string
       user: {
@@ -74,15 +79,22 @@ export const authApi = {
       }
     }>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        password: hashedPassword, // Send hashed password instead of plain text
+      }),
     })
     return response
   },
 
   /**
    * Login admin user
+   * Password is hashed client-side before sending for security
    */
   login: async (email: string, password: string) => {
+    // Hash password client-side before sending
+    const hashedPassword = await hashPassword(password)
+    
     const response = await apiRequest<{
       token: string
       user: {
@@ -94,7 +106,10 @@ export const authApi = {
       }
     }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ 
+        email, 
+        password: hashedPassword, // Send hashed password instead of plain text
+      }),
     })
     return response
   },

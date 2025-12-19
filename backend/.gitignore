@@ -27,3 +27,6 @@ Thumbs.db
 dist/
 build/
 
+# Development scripts (not part of production)
+src/scripts/
+
