@@ -36,8 +36,8 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
         email: user.email,
         status: user.status,
         region: user.region,
-        plan: 'Free', // Defaults for edit mode if not available in user object
-        pricePerMonth: 0,
+        plan: (user as any).plan || 'Free', // Get plan from user object (set by backend)
+        pricePerMonth: 0, // Not used anymore, but kept for compatibility
       })
     } else {
       // Reset form for new user
@@ -54,7 +54,7 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
   }, [user, isOpen])
 
   const createMutation = useMutation({
-    mutationFn: (data: { name: string; email: string; region: string; status?: string; plan?: string; pricePerMonth?: number }) =>
+    mutationFn: (data: { name: string; email: string; region: string; status?: string; plan?: string }) =>
       customerApi.createCustomer(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
@@ -98,9 +98,23 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
     }
 
     if (isEditMode) {
-      updateMutation.mutate(formData)
+      // For updates, include plan in the mutation
+      updateMutation.mutate({
+        name: formData.name,
+        email: formData.email,
+        status: formData.status,
+        region: formData.region,
+        plan: formData.plan,
+      })
     } else {
-      createMutation.mutate(formData)
+      // For creation, plan is already in formData
+      createMutation.mutate({
+        name: formData.name,
+        email: formData.email,
+        status: formData.status,
+        region: formData.region,
+        plan: formData.plan,
+      })
     }
   }
 
@@ -118,15 +132,17 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
     const randomData = generateRandomUserData()
     const plans = ['Free', 'Basic', 'Pro']
     const plan = plans[Math.floor(Math.random() * plans.length)]
-    const prices: Record<string, number> = { Free: 0, Basic: 29, Pro: 99 }
     
     setFormData({
       ...randomData,
       plan,
-      pricePerMonth: prices[plan],
+      pricePerMonth: 0, // Not used anymore
     })
     setErrors({}) // Clear any errors
   }
+
+  // Plan prices (auto-calculated, not user input)
+  const planPrices: Record<string, number> = { Free: 0, Basic: 29, Pro: 99 }
 
   if (!isOpen) return null
 
@@ -240,44 +256,28 @@ export default function UserForm({ user, isOpen, onClose, onSuccess }: UserFormP
                 </select>
               </div>
 
-              {/* Plan (Only in Add Mode) */}
-              {!isEditMode && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Subscription Plan
-                    </label>
-                    <select
-                      value={formData.plan}
-                      onChange={(e) => {
-                        const plan = e.target.value
-                        const prices: Record<string, number> = { Free: 0, Basic: 29, Pro: 99 }
-                        setFormData(prev => ({ ...prev, plan, pricePerMonth: prices[plan] }))
-                      }}
-                      className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
-                      disabled={isLoading}
-                    >
-                      <option value="Free">Free ($0)</option>
-                      <option value="Basic">Basic ($29/mo)</option>
-                      <option value="Pro">Pro ($99/mo)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Price per Month (USD)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.pricePerMonth}
-                      onChange={(e) => handleChange('pricePerMonth', e.target.value)}
-                      className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
-                      disabled={isLoading}
-                      min="0"
-                    />
-                  </div>
-                </>
-              )}
+              {/* Plan (Available in both Add and Edit Mode) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Subscription Plan
+                </label>
+                <select
+                  value={formData.plan}
+                  onChange={(e) => {
+                    const plan = e.target.value
+                    setFormData(prev => ({ ...prev, plan }))
+                  }}
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                  disabled={isLoading}
+                >
+                  <option value="Free">Free ($0/mo)</option>
+                  <option value="Basic">Basic ($29/mo)</option>
+                  <option value="Pro">Pro ($99/mo)</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Price: ${planPrices[formData.plan]}/month (automatically calculated)
+                </p>
+              </div>
 
               {/* Region */}
               <div>

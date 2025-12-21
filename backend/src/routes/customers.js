@@ -129,6 +129,11 @@ router.get('/:id', async (req, res) => {
       organizationId,
     })
 
+    // Get active subscription to show current plan
+    const activeSubscription = subscriptions.find((sub) => sub.status === 'active')
+    const customerObj = customer.toObject()
+    customerObj.plan = activeSubscription ? activeSubscription.plan : 'Free'
+
     // Get recent activity
     const recentActivity = await UsageEvent.find({
       customerId: id,
@@ -140,7 +145,7 @@ router.get('/:id', async (req, res) => {
     res.json({
       success: true,
       data: {
-        customer,
+        customer: customerObj,
         subscriptions,
         recentActivity,
       },
@@ -159,7 +164,7 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { name, email, region, status = 'active', plan, pricePerMonth } = req.body
+    const { name, email, region, status = 'active', plan = 'Free' } = req.body
     const organizationId = req.organizationId
 
     if (!name || !email || !region) {
@@ -168,6 +173,15 @@ router.post('/', async (req, res) => {
         error: 'Name, email, and region are required',
       })
     }
+
+    // Plan prices (auto-calculated)
+    const planPrices = {
+      Free: 0,
+      Basic: 29,
+      Pro: 99,
+    }
+
+    const pricePerMonth = planPrices[plan] || 0
 
     const customer = await Customer.create({
       organizationId,
@@ -179,36 +193,25 @@ router.post('/', async (req, res) => {
       lastActiveAt: new Date(),
     })
 
-    // If plan details are provided, create a subscription and an initial transaction
-    if (plan && plan !== 'Free') {
-      const subscription = await Subscription.create({
-        organizationId,
-        customerId: customer._id,
-        plan,
-        pricePerMonth: pricePerMonth || 0,
-        status: 'active',
-        startDate: new Date(),
-      })
+    // Create subscription for the selected plan
+    const subscription = await Subscription.create({
+      organizationId,
+      customerId: customer._id,
+      plan,
+      pricePerMonth,
+      status: 'active',
+      startDate: new Date(),
+    })
 
-      // Create an initial successful transaction for the first month
-      if (pricePerMonth > 0) {
-        await Transaction.create({
-          organizationId,
-          customerId: customer._id,
-          subscriptionId: subscription._id,
-          amount: pricePerMonth,
-          currency: 'USD',
-          status: 'success',
-        })
-      }
-    } else if (plan === 'Free') {
-      await Subscription.create({
+    // Create an initial successful transaction for paid plans
+    if (pricePerMonth > 0) {
+      await Transaction.create({
         organizationId,
         customerId: customer._id,
-        plan: 'Free',
-        pricePerMonth: 0,
-        status: 'active',
-        startDate: new Date(),
+        subscriptionId: subscription._id,
+        amount: pricePerMonth,
+        currency: 'USD',
+        status: 'success',
       })
     }
 
@@ -240,14 +243,104 @@ router.put('/:id', async (req, res) => {
     const organizationId = req.organizationId
     const updates = req.body
 
+    // Extract plan if provided (will handle subscription separately)
+    const { plan, ...customerUpdates } = updates
+
     // Remove fields that shouldn't be updated directly
-    delete updates._id
-    delete updates.organizationId
-    delete updates.createdAt
+    delete customerUpdates._id
+    delete customerUpdates.organizationId
+    delete customerUpdates.createdAt
+
+    // Check if customer has active paid subscriptions (Basic or Pro)
+    // If they do, prevent status updates (except to 'churned' which cancels subscriptions)
+    // BUT: Allow status updates if we're also updating the plan (which will handle subscription changes)
+    if (customerUpdates.status && customerUpdates.status !== 'churned' && plan === undefined) {
+      const activePaidSubscriptions = await Subscription.countDocuments({
+        customerId: id,
+        organizationId,
+        status: 'active',
+        plan: { $in: ['Basic', 'Pro'] },
+      })
+
+      if (activePaidSubscriptions > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Cannot update customer status while they have active paid subscriptions (Basic or Pro). Please cancel their subscriptions first, or set status to "churned" to automatically cancel them.',
+        })
+      }
+    }
+
+    // Handle plan update if provided
+    // Process plan updates regardless of status - we'll set status to 'active' for paid plans anyway
+    if (plan !== undefined) {
+      const planPrices = {
+        Free: 0,
+        Basic: 29,
+        Pro: 99,
+      }
+
+      // Check if user has an active Basic or Pro subscription
+      const activePaidSubscription = await Subscription.findOne({
+        customerId: id,
+        organizationId,
+        status: 'active',
+        plan: { $in: ['Basic', 'Pro'] },
+      })
+
+      // If user has active Basic/Pro subscription, they must cancel it first
+      if (activePaidSubscription) {
+        return res.status(400).json({
+          success: false,
+          error: `Cannot update subscription plan. User has an active ${activePaidSubscription.plan} subscription. Please cancel the current subscription first before creating a new one.`,
+        })
+      }
+
+      // User doesn't have active Basic/Pro subscription - can create/upgrade freely
+      // Find any active subscription (could be Free or none)
+      const activeSubscription = await Subscription.findOne({
+        customerId: id,
+        organizationId,
+        status: 'active',
+      })
+
+      // Cancel any existing active subscription (Free or otherwise)
+      if (activeSubscription) {
+        activeSubscription.status = 'cancelled'
+        activeSubscription.endDate = new Date()
+        await activeSubscription.save()
+      }
+
+      // Create new subscription with the selected plan
+      const newSubscription = await Subscription.create({
+        organizationId,
+        customerId: id,
+        plan,
+        pricePerMonth: planPrices[plan] || 0,
+        status: 'active',
+        startDate: new Date(),
+      })
+
+      // Create transaction if it's a paid plan (Basic or Pro)
+      if (planPrices[plan] > 0) {
+        await Transaction.create({
+          organizationId,
+          customerId: id,
+          subscriptionId: newSubscription._id,
+          amount: planPrices[plan],
+          currency: 'USD',
+          status: 'success',
+        })
+
+        // When creating/upgrading to Basic/Pro, always set user status to 'active'
+        // This applies regardless of current user status (churned, inactive, etc.)
+        // Override any status that was passed - paid subscribers should be active
+        customerUpdates.status = 'active'
+      }
+    }
 
     const customer = await Customer.findOneAndUpdate(
       { _id: id, organizationId },
-      { $set: updates },
+      { $set: customerUpdates },
       { new: true, runValidators: true }
     )
 
@@ -258,8 +351,10 @@ router.put('/:id', async (req, res) => {
       })
     }
 
-    // If status changed to churned, cancel active subscriptions
-    if (updates.status === 'churned') {
+    // If status changed to churned, cancel all active subscriptions
+    // When a user is churned, all their subscriptions are cancelled
+    // They will effectively have no active subscription (plan shows as Free by default)
+    if (customerUpdates.status === 'churned') {
       await Subscription.updateMany(
         {
           customerId: id,
@@ -273,6 +368,8 @@ router.put('/:id', async (req, res) => {
           },
         }
       )
+      // Note: We don't create a Free subscription here because churned users shouldn't have active subscriptions
+      // The UI will show "Free" as the plan because they have no active paid subscription
     }
 
     res.json({

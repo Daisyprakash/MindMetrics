@@ -236,6 +236,7 @@ export const customerApi = {
     email: string
     region: string
     status?: string
+    plan?: string
   }) => {
     return apiRequest<User>('/customers', {
       method: 'POST',
